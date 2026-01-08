@@ -10,12 +10,14 @@ import { ChatGroq } from "@langchain/groq";
 import { tool } from "@langchain/core/tools";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { AIMessage } from "@langchain/core/messages";
+import axios from "axios";
 
 export const maxDuration = 30;
 
 const weatherTool = tool(
   async ({ city }: { city: string }): Promise<string> => {
-    return `The weather in ${city} is sunny with a high of 75°F.`;
+    const { data } = await axios.get(`https://wttr.in/${city}?format=j2`);
+    return data;
   },
   {
     name: "get_weather",

@@ -16,6 +16,7 @@
     "@langchain/langgraph": "^1.0.7",
     "@radix-ui/react-slot": "^1.2.4",
     "add": "^2.0.6",
+    "axios": "^1.13.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",
