@@ -9,7 +9,13 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ai-sdk/langchain": "^2.0.25",
+    "@ai-sdk/react": "^3.0.21",
+    "@langchain/core": "^1.1.11",
+    "@langchain/groq": "^1.0.2",
+    "@langchain/langgraph": "^1.0.7",
     "@radix-ui/react-slot": "^1.2.4",
+    "add": "^2.0.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",
