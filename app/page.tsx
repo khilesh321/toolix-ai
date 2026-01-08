@@ -1,35 +1,60 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useChat } from "@ai-sdk/react";
+import { useChat } from '@ai-sdk/react';
+import { BadgeCheck, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
 export default function Chat() {
-  const { messages, sendMessage, status } = useChat();
+  const [input, setInput] = useState('');
+  const { messages, sendMessage } = useChat();
 
   return (
-    <div>
-      {messages.map((m) => (
-        <div key={m.id}>
-          {m.parts.map((part, i) =>
-            part.type === "text" ? <span key={i}>{part.text}</span> : null
-          )}
+    <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+      {messages.map(message => (
+        <div key={message.id} className="whitespace-pre-wrap mb-4">
+          <strong>{message.role === 'user' ? 'User' : 'AI'}:</strong>
+
+          {message.parts.map((part, i) => {
+            switch (part.type) {
+              case 'text':
+                return (
+                  <div key={`${message.id}-${i}`}>
+                    {part.text}
+                  </div>
+                );
+
+              case 'data-progress':
+                const data = part.data as { message: string };
+                const success = data.message.includes('successfully') || data.message.includes('fetched');
+                return (
+                  <div
+                    key={`${message.id}-${i}`}
+                    className={`text-sm text-blue-500 h-8 rounded flex items-center ${success && 'text-green-600'}`}
+                  >
+                    {success ? <BadgeCheck className='mr-2'/> : <Loader2 className="inline-block mr-2 animate-spin" />} {(part.data as { message: string }).message}
+                  </div>
+                );
+              default:
+                return null;
+            }
+          })}
         </div>
       ))}
+
       <form
-        onSubmit={(e) => {
+        onSubmit={e => {
           e.preventDefault();
-          const input = e.currentTarget.elements.namedItem(
-            "message"
-          ) as HTMLInputElement;
-          sendMessage({ text: input.value });
-          input.value = "";
+          sendMessage({ text: input });
+          setInput('');
         }}
       >
-        <Input name="message" placeholder="Say something..." />
-        <Button type="submit" disabled={status === "streaming"}>
-          Send
-        </Button>
+        <input
+          className="fixed bottom-0 w-full max-w-md p-2 mb-8 border rounded shadow-xl
+                     dark:bg-zinc-900 dark:border-zinc-800"
+          value={input}
+          placeholder="Ask weather..."
+          onChange={e => setInput(e.currentTarget.value)}
+        />
       </form>
     </div>
   );
