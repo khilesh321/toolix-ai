@@ -3,12 +3,22 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { UIMessage } from "@ai-sdk/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
 interface ChatMessageProps {
   message: UIMessage;
 }
 
 export function ChatMessage({ message }: ChatMessageProps) {
+  const processLatex = (text: string) => {
+    // Convert \[ \] to $$ $$
+    let processed = text.replace(/\\\[/g, "$$").replace(/\\\]/g, "$$");
+    // Convert \( \) to $ $
+    processed = processed.replace(/\\\(/g, "$").replace(/\\\)/g, "$");
+    return processed;
+  };
+
   return (
     <div
       className={`flex gap-3 ${
@@ -36,10 +46,17 @@ export function ChatMessage({ message }: ChatMessageProps) {
               return (
                 <div
                   key={`${message.id}-${i}`}
-                  className="text-sm leading-relaxed prose prose-sm dark:prose-invert max-w-none [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted/50 [&_th]:px-3 [&_th]:py-2 [&_th]:font-semibold [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2"
+                  className={`text-sm ${
+                    part.text.includes("\\[") || part.text.includes("\\(")
+                      ? "leading-[2.5]"
+                      : "leading-relaxed"
+                  } prose prose-sm dark:prose-invert max-w-none [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted/50 [&_th]:px-3 [&_th]:py-2 [&_th]:font-semibold [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2`}
                 >
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {part.text}
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
+                  >
+                    {processLatex(part.text)}
                   </ReactMarkdown>
                 </div>
               );
