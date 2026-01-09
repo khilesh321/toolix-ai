@@ -47,7 +47,7 @@ export default function Chat() {
             <div className="flex flex-col">
               <span className="text-lg font-semibold">Toolix AI</span>
               <span className="text-xs text-muted-foreground font-normal flex items-center gap-1">
-                <Sparkles className="size-3" /> Powered by AI
+                <Sparkles className="size-3" /> Tool-Enabled AI Agent
               </span>
             </div>
           </CardTitle>
@@ -69,7 +69,7 @@ export default function Chat() {
                   </h3>
                   <p className="text-sm text-muted-foreground max-w-sm">
                     Ask me about the weather in any city. Try typing "What's the
-                    weather in Tokyo?"
+                    weather in Mumbai?"
                   </p>
                 </div>
               </div>
