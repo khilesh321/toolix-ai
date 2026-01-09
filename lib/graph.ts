@@ -18,6 +18,7 @@ Formatting Guidelines:
 - Use code blocks with \`\`\` for code snippets
 - Use bullet points and numbered lists for clarity
 - Use tables when presenting structured data
+- Use relevant emojis sparingly to enhance communication (e.g., 🌤️ for weather, 🔢 for math, 💻 for coding)
 
 When providing mathematical calculations or equations:
 - Use LaTeX formatting with \\[ \\] for display math (equations on their own line)
