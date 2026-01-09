@@ -35,7 +35,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
       )}
 
       <div
-        className={`max-w-[80%] space-y-2 overflow-hidden wrap-break-word ${
+        className={`max-w-[calc(100vw-6rem)] sm:max-w-[85%] md:max-w-[80%] space-y-2 overflow-hidden wrap-break-word ${
           message.role === "user"
             ? "bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-3 shadow-md"
             : "bg-muted/50 border border-border/50 rounded-2xl rounded-bl-md px-4 py-3"
@@ -57,20 +57,25 @@ export function ChatMessage({ message }: ChatMessageProps) {
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeKatex]}
                     components={{
-                      code: ({
-                        inline,
-                        className,
-                        children,
-                        ...props
-                      }: any) => (
-                        <CodeBlock
-                          inline={inline}
-                          className={className}
-                          {...props}
-                        >
-                          {children}
-                        </CodeBlock>
-                      ),
+                      pre: ({ children, ...props }: any) => {
+                        const child = children?.props;
+                        const className = child?.className || "";
+                        const code = child?.children || "";
+
+                        return (
+                          <CodeBlock className={className}>{code}</CodeBlock>
+                        );
+                      },
+                      code: ({ inline, children, ...props }: any) => {
+                        if (inline) {
+                          return (
+                            <code className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50 text-xs font-mono">
+                              {children}
+                            </code>
+                          );
+                        }
+                        return <code {...props}>{children}</code>;
+                      },
                       table: ({ children, ...props }: any) => (
                         <div className="overflow-x-auto -mx-4 px-4 my-4">
                           <table {...props}>{children}</table>

@@ -9,28 +9,34 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 interface CodeBlockProps {
   children: string;
   className?: string;
-  inline?: boolean;
 }
 
-export function CodeBlock({ children, className, inline }: CodeBlockProps) {
+export function CodeBlock({ children, className }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
 
   const language = className?.replace("language-", "") || "text";
   const code = String(children).replace(/\n$/, "");
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(code);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = code;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error("Failed to copy:", error);
+    }
   };
-
-  if (inline) {
-    return (
-      <code className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50 text-xs font-mono">
-        {children}
-      </code>
-    );
-  }
 
   return (
     <div className="relative group my-4">
@@ -41,7 +47,7 @@ export function CodeBlock({ children, className, inline }: CodeBlockProps) {
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="h-7 px-2 lg:opacity-0 group-hover:opacity-100 transition-opacity"
           onClick={handleCopy}
         >
           {copied ? (
