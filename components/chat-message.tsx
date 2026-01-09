@@ -1,6 +1,8 @@
 import { Bot, User, BadgeCheck, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { UIMessage } from "@ai-sdk/react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface ChatMessageProps {
   message: UIMessage;
@@ -34,9 +36,11 @@ export function ChatMessage({ message }: ChatMessageProps) {
               return (
                 <div
                   key={`${message.id}-${i}`}
-                  className="text-sm leading-relaxed whitespace-pre-wrap wrap-break-word overflow-wrap-anywhere"
+                  className="text-sm leading-relaxed prose prose-sm dark:prose-invert max-w-none [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted/50 [&_th]:px-3 [&_th]:py-2 [&_th]:font-semibold [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2"
                 >
-                  {part.text}
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {part.text}
+                  </ReactMarkdown>
                 </div>
               );
 

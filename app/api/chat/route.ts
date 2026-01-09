@@ -59,7 +59,7 @@ async function callModel(state: typeof MessagesAnnotation.State) {
 function shouldContinue(state: typeof MessagesAnnotation.State) {
   const lastMessage = state.messages.at(-1) as AIMessage;
 
-  console.log(lastMessage.tool_calls);
+  // console.log(lastMessage.tool_calls);
 
   if (lastMessage.tool_calls?.length) return "tools";
 

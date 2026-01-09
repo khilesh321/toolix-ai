@@ -1,4 +1,4 @@
-import { Cloud, Sparkles } from "lucide-react";
+import { Bot, Sparkles } from "lucide-react";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 
 export function ChatHeader() {
@@ -6,7 +6,7 @@ export function ChatHeader() {
     <CardHeader className="border-b bg-card/80 backdrop-blur-sm shrink-0">
       <CardTitle className="flex items-center gap-3">
         <div className="p-2 rounded-xl bg-linear-to-br from-primary/20 to-primary/5 border border-primary/20">
-          <Cloud className="size-5 text-primary" />
+          <Bot className="size-5 text-primary" />
         </div>
         <div className="flex flex-col">
           <span className="text-lg font-semibold">Toolix AI</span>
