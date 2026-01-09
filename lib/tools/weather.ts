@@ -4,7 +4,10 @@ import z from "zod";
 
 export const weatherTool = tool(
   async ({ city }: { city: string }, config: ToolRuntime): Promise<string> => {
-    config.writer?.({
+    
+    const writer = config.writer;
+
+    writer?.({
       type: "progress",
       id: "weather",
       message: `Fetching weather for ${city}...`,
@@ -12,7 +15,7 @@ export const weatherTool = tool(
 
     const { data } = await axios.get(`https://wttr.in/${city}?format=j2`);
 
-    config.writer?.({
+    writer?.({
       type: "progress",
       id: "weather",
       message: "Weather fetched successfully",

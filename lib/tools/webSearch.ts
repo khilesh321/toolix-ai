@@ -11,14 +11,16 @@ const webSearch = new TavilySearch({
 export const webSearchTool = tool(
   async ({ query }: { query: string }, config:ToolRuntime) => {
 
-    config.writer?.({
+    const writer = config.writer;
+
+    writer?.({
       type: "progress",
       id: "web_search",
       message: `Searching the web for "${query}"...`,
     })
     const res = await webSearch.invoke({ query });
 
-    config.writer?.({
+    writer?.({
       type: "progress",
       id: "web_search",
       message: "Web search completed successfully",
