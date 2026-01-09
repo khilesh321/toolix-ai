@@ -57,7 +57,12 @@ export function ChatMessage({ message }: ChatMessageProps) {
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeKatex]}
                     components={{
-                      code: ({ inline, className, children, ...props }: any) => (
+                      code: ({
+                        inline,
+                        className,
+                        children,
+                        ...props
+                      }: any) => (
                         <CodeBlock
                           inline={inline}
                           className={className}
@@ -75,9 +80,18 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
             case "data-progress":
               const data = part.data as { message: string };
-              const success =
-                data.message.includes("successfully") ||
-                data.message.includes("fetched");
+              const successKeywords = [
+                "successfully",
+                "fetched",
+                "created",
+                "updated",
+                "completed",
+              ];
+
+              const success = successKeywords.some((keyword) =>
+                data.message.includes(keyword)
+              );
+
               return (
                 <div
                   key={`${message.id}-${i}`}

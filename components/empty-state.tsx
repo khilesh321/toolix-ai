@@ -1,4 +1,4 @@
-import { Bot, MapPin, Cloud, Thermometer, Wind } from "lucide-react";
+import { Bot, MapPin, Calculator, Code, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface EmptyStateProps {
@@ -7,9 +7,9 @@ interface EmptyStateProps {
 
 const suggestions = [
   { icon: MapPin, text: "What's the weather in Mumbai?" },
-  { icon: Cloud, text: "Tell me the weather in New York" },
-  { icon: Thermometer, text: "How's the weather in Delhi?" },
-  { icon: Wind, text: "Show me Goa's weather" },
+  { icon: Calculator, text: "Calculate 903 + 834/4566 - 344 × 2" },
+  { icon: Code, text: "Write a Python function to sort a list" },
+  { icon: Sparkles, text: "Explain quantum computing simply" },
 ];
 
 export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
@@ -23,7 +23,7 @@ export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
           Welcome to Toolix AI
         </h3>
         <p className="text-sm text-muted-foreground max-w-sm">
-          Ask me about the weather in any city around the world
+          Your intelligent assistant for weather, calculations, coding, and more
         </p>
       </div>
 
