@@ -71,6 +71,11 @@ export function ChatMessage({ message }: ChatMessageProps) {
                           {children}
                         </CodeBlock>
                       ),
+                      table: ({ children, ...props }: any) => (
+                        <div className="overflow-x-auto -mx-4 px-4 my-4">
+                          <table {...props}>{children}</table>
+                        </div>
+                      ),
                     }}
                   >
                     {processLatex(part.text)}
