@@ -29,6 +29,10 @@ export default function Chat() {
     setInput("");
   };
 
+  const handleSuggestionClick = (message: string) => {
+    sendMessage({ text: message });
+  };
+
   return (
     <div className="h-screen bg-linear-to-br from-background via-background to-muted/50 flex flex-col">
       <Card className="flex-1 flex flex-col rounded-none border-0 border-b shadow-none">
@@ -39,7 +43,9 @@ export default function Chat() {
           className="flex-1 p-4 px-6 overflow-hidden pb-20"
         >
           <div className="space-y-6 max-w-4xl mx-auto overflow-hidden">
-            {messages.length === 0 && <EmptyState />}
+            {messages.length === 0 && (
+              <EmptyState onSuggestionClick={handleSuggestionClick} />
+            )}
 
             {messages.map((message) => (
               <ChatMessage key={message.id} message={message} />
