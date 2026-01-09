@@ -11,9 +11,10 @@
   "dependencies": {
     "@ai-sdk/langchain": "^2.0.25",
     "@ai-sdk/react": "^3.0.21",
-    "@langchain/core": "^1.1.11",
+    "@langchain/core": "^1.1.12",
     "@langchain/groq": "^1.0.2",
     "@langchain/langgraph": "^1.0.7",
+    "@langchain/tavily": "^1.2.0",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-scroll-area": "^1.2.10",
     "@radix-ui/react-slot": "^1.2.4",
