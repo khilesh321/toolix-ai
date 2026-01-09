@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import { CodeBlock } from "@/components/code-block";
 
 interface ChatMessageProps {
   message: UIMessage;
@@ -55,6 +56,17 @@ export function ChatMessage({ message }: ChatMessageProps) {
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeKatex]}
+                    components={{
+                      code: ({ inline, className, children, ...props }: any) => (
+                        <CodeBlock
+                          inline={inline}
+                          className={className}
+                          {...props}
+                        >
+                          {children}
+                        </CodeBlock>
+                      ),
+                    }}
                   >
                     {processLatex(part.text)}
                   </ReactMarkdown>
