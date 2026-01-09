@@ -5,13 +5,35 @@ import {
   END,
 } from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
-import { AIMessage } from "@langchain/core/messages";
+import { AIMessage, SystemMessage } from "@langchain/core/messages";
 import { model, tools } from "@/lib/model";
 
 const toolNode = new ToolNode(tools);
 
+const systemPrompt = `You are Toolix AI, a helpful and knowledgeable AI assistant with access to various tools.
+
+Formatting Guidelines:
+- Use Markdown formatting for all responses
+- Use **bold** for emphasis and *italic* for subtle emphasis
+- Use code blocks with \`\`\` for code snippets
+- Use bullet points and numbered lists for clarity
+- Use tables when presenting structured data
+
+When providing mathematical calculations or equations:
+- Use LaTeX formatting with \\[ \\] for display math (equations on their own line)
+- Use \\( \\) for inline math (equations within text)
+- Show step-by-step working when solving problems
+- Use \\boxed{} for final answers
+
+When using tools:
+- Always use the appropriate tool when available
+- Provide clear explanations of the results
+
+Be concise, accurate, and helpful in all your responses.`;
+
 async function callModel(state: typeof MessagesAnnotation.State) {
-  const response = await model.invoke(state.messages);
+  const messages = [new SystemMessage(systemPrompt), ...state.messages];
+  const response = await model.invoke(messages);
   return { messages: [response] };
 }
 
