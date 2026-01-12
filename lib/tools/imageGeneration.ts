@@ -1,18 +1,18 @@
 import { tool, ToolRuntime } from "@langchain/core/tools";
 import OpenAI from "openai";
 import z from "zod";
-import fs from "fs";
-import path from "path";
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const client = new OpenAI({
   apiKey: process.env.A4F_API_KEY || "",
   baseURL: "https://api.a4f.co/v1",
 });
-
-const imagesDir = path.join(process.cwd(), "public", "images");
-if (!fs.existsSync(imagesDir)) {
-  fs.mkdirSync(imagesDir, { recursive: true });
-}
 
 export const imageGenerationTool = tool(
   async (
@@ -39,7 +39,7 @@ export const imageGenerationTool = tool(
       writer?.({
         type: "progress",
         id: "image_generation",
-        message: "Processing generated image...",
+        message: "Uploading image to Cloudinary...",
       });
 
       if (!response.data || response.data.length === 0) {
@@ -51,27 +51,22 @@ export const imageGenerationTool = tool(
         throw new Error("No image data found in response");
       }
 
-      const timestamp = Date.now();
-      const randomSuffix = Math.random().toString(36).substring(7);
-      const filename = `image_${timestamp}_${randomSuffix}.png`;
-      const filepath = path.join(imagesDir, filename);
-
-      // Save image to public/images folder
-      const imageBuffer = Buffer.from(imageData, "base64");
-      fs.writeFileSync(filepath, imageBuffer);
+      const uploadResult = await cloudinary.uploader.upload(
+        `data:image/png;base64,${imageData}`,
+        {
+          resource_type: "image",
+          folder: "Toolix-ai/generated-images",
+        }
+      );
 
       writer?.({
         type: "progress",
         id: "image_generation",
-        message: "Image generated and saved successfully",
+        message: "Image Generated & uploaded successfully",
       });
 
-      // Return only the URL reference, not the base64 data
       const result = {
-        imageUrl: `/images/${filename}`,
-        description:
-          response.data[0].revised_prompt ||
-          "Image generated successfully with Flux 1 Schnell",
+        imageUrl: uploadResult.secure_url,
       };
 
       return JSON.stringify(result);

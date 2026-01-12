@@ -20,6 +20,30 @@ export function ChatMessage({ message }: ChatMessageProps) {
     return processed;
   };
 
+  const renderImage = (imageUrl: string, key: string) => (
+    <img
+      key={key}
+      src={imageUrl}
+      alt="Generated Image"
+      className="max-w-full h-auto rounded-lg shadow-md"
+    />
+  );
+
+  const parseAndRenderImage = (data: any, key: string) => {
+    let parsed;
+    try {
+      if (typeof data === "string") {
+        parsed = JSON.parse(data);
+      } else {
+        parsed = data;
+      }
+      if (parsed.imageUrl && typeof parsed.imageUrl === "string") {
+        return renderImage(parsed.imageUrl, key);
+      }
+    } catch {}
+    return null;
+  };
+
   return (
     <div
       className={`flex gap-3 ${
@@ -41,134 +65,115 @@ export function ChatMessage({ message }: ChatMessageProps) {
             : "bg-muted/50 border border-border/50 rounded-2xl rounded-bl-md px-4 py-3"
         }`}
       >
-        {message.parts.map((part: any, i: number) => {
-          switch (part.type) {
-            case "text":
-              if (part.text.startsWith("data:image/")) {
+        {(() => {
+          // Separate progress messages and render them first
+          const progressParts = message.parts.filter(
+            (p: any) => p.type === "data-progress"
+          );
+          const otherParts = message.parts.filter(
+            (p: any) => p.type !== "data-progress"
+          );
+          const sortedParts = [...progressParts, ...otherParts];
+
+          return sortedParts.map((part: any, i: number) => {
+            switch (part.type) {
+              case "text":
+                const imageFromText = parseAndRenderImage(
+                  part.text,
+                  `${message.id}-${i}`
+                );
+                if (imageFromText) {
+                  return imageFromText;
+                }
                 return (
-                  <div key={`${message.id}-${i}`} className="my-2">
-                    <img
-                      src={part.text}
-                      alt="Generated Image"
-                      className="max-w-full h-auto rounded-lg border border-border/50 shadow-sm"
-                    />
+                  <div
+                    key={`${message.id}-${i}`}
+                    className={`text-sm ${
+                      part.text.includes("\\[") || part.text.includes("\\(")
+                        ? "leading-[2.5]"
+                        : "leading-relaxed"
+                    } prose prose-sm dark:prose-invert max-w-none [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted/50 [&_th]:px-3 [&_th]:py-2 [&_th]:font-semibold [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2`}
+                  >
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm, remarkMath]}
+                      rehypePlugins={[rehypeKatex]}
+                      components={{
+                        pre: ({ children, ...props }: any) => {
+                          const child = children?.props;
+                          const className = child?.className || "";
+                          const code = child?.children || "";
+
+                          return (
+                            <CodeBlock className={className}>{code}</CodeBlock>
+                          );
+                        },
+                        code: ({ inline, children, ...props }: any) => {
+                          if (inline) {
+                            return (
+                              <code className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50 text-xs font-mono">
+                                {children}
+                              </code>
+                            );
+                          }
+                          return <code {...props}>{children}</code>;
+                        },
+                        table: ({ children, ...props }: any) => (
+                          <div className="overflow-x-auto -mx-4 px-4 my-4">
+                            <table {...props}>{children}</table>
+                          </div>
+                        ),
+                      }}
+                    >
+                      {processLatex(part.text)}
+                    </ReactMarkdown>
                   </div>
                 );
-              }
-              return (
-                <div
-                  key={`${message.id}-${i}`}
-                  className={`text-sm ${
-                    part.text.includes("\\[") || part.text.includes("\\(")
-                      ? "leading-[2.5]"
-                      : "leading-relaxed"
-                  } prose prose-sm dark:prose-invert max-w-none [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted/50 [&_th]:px-3 [&_th]:py-2 [&_th]:font-semibold [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2`}
-                >
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm, remarkMath]}
-                    rehypePlugins={[rehypeKatex]}
-                    components={{
-                      pre: ({ children, ...props }: any) => {
-                        const child = children?.props;
-                        const className = child?.className || "";
-                        const code = child?.children || "";
 
-                        return (
-                          <CodeBlock className={className}>{code}</CodeBlock>
-                        );
-                      },
-                      code: ({ inline, children, ...props }: any) => {
-                        if (inline) {
-                          return (
-                            <code className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50 text-xs font-mono">
-                              {children}
-                            </code>
-                          );
-                        }
-                        return <code {...props}>{children}</code>;
-                      },
-                      table: ({ children, ...props }: any) => (
-                        <div className="overflow-x-auto -mx-4 px-4 my-4">
-                          <table {...props}>{children}</table>
-                        </div>
-                      ),
-                    }}
+              case "data-progress":
+                const data = part.data as { message: string };
+                const successKeywords = [
+                  "successfully",
+                  "fetched",
+                  "created",
+                  "updated",
+                  "completed",
+                ];
+
+                const success = successKeywords.some((keyword) =>
+                  data.message.includes(keyword)
+                );
+
+                return (
+                  <div
+                    key={`${message.id}-${i}`}
+                    className={`flex items-center gap-2 text-xs py-1.5 px-3 rounded-lg ${
+                      success
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                        : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                    }`}
                   >
-                    {processLatex(part.text)}
-                  </ReactMarkdown>
-                </div>
-              );
+                    {success ? (
+                      <BadgeCheck className="size-3.5" />
+                    ) : (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    )}
+                    <span>{data.message}</span>
+                  </div>
+                );
 
-            case "data-progress":
-              const data = part.data as { message: string };
-              const successKeywords = [
-                "successfully",
-                "fetched",
-                "created",
-                "updated",
-                "completed",
-              ];
+              case "dynamic-tool":
+                const imageFromTool = parseAndRenderImage(
+                  part.output,
+                  `${message.id}-${i}`
+                );
+                if (imageFromTool) return imageFromTool;
+                return null;
 
-              const success = successKeywords.some((keyword) =>
-                data.message.includes(keyword)
-              );
-
-              return (
-                <div
-                  key={`${message.id}-${i}`}
-                  className={`flex items-center gap-2 text-xs py-1.5 px-3 rounded-lg ${
-                    success
-                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                      : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                  }`}
-                >
-                  {success ? (
-                    <BadgeCheck className="size-3.5" />
-                  ) : (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  )}
-                  <span>{data.message}</span>
-                </div>
-              );
-
-            case "tool-result":
-              const toolResult = part.result;
-              if (typeof toolResult === "string") {
-                try {
-                  const parsed = JSON.parse(toolResult);
-                  if (parsed.imageUrl) {
-                    return (
-                      <div key={`${message.id}-${i}`} className="space-y-2">
-                        <img
-                          src={parsed.imageUrl}
-                          alt={parsed.description || "Generated image"}
-                          className="rounded-lg max-w-full h-auto shadow-md border border-border/50"
-                        />
-                        {parsed.description && (
-                          <p className="text-xs text-muted-foreground italic">
-                            {parsed.description}
-                          </p>
-                        )}
-                      </div>
-                    );
-                  }
-                } catch (e) {
-                  return (
-                    <div
-                      key={`${message.id}-${i}`}
-                      className="text-sm text-muted-foreground"
-                    >
-                      {toolResult}
-                    </div>
-                  );
-                }
-              }
-              return null;
-
-            default:
-              return null;
-          }
-        })}
+              default:
+                return null;
+            }
+          });
+        })()}
       </div>
 
       {message.role === "user" && (
