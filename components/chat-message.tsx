@@ -119,6 +119,41 @@ export function ChatMessage({ message }: ChatMessageProps) {
                   <span>{data.message}</span>
                 </div>
               );
+
+            case "tool-result":
+              const toolResult = part.result;
+              if (typeof toolResult === "string") {
+                try {
+                  const parsed = JSON.parse(toolResult);
+                  if (parsed.imageUrl) {
+                    return (
+                      <div key={`${message.id}-${i}`} className="space-y-2">
+                        <img
+                          src={parsed.imageUrl}
+                          alt={parsed.description || "Generated image"}
+                          className="rounded-lg max-w-full h-auto shadow-md border border-border/50"
+                        />
+                        {parsed.description && (
+                          <p className="text-xs text-muted-foreground italic">
+                            {parsed.description}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }
+                } catch (e) {
+                  return (
+                    <div
+                      key={`${message.id}-${i}`}
+                      className="text-sm text-muted-foreground"
+                    >
+                      {toolResult}
+                    </div>
+                  );
+                }
+              }
+              return null;
+
             default:
               return null;
           }
