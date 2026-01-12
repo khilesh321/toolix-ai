@@ -4,7 +4,6 @@ import z from "zod";
 
 export const weatherTool = tool(
   async ({ city }: { city: string }, config: ToolRuntime): Promise<string> => {
-    
     const writer = config.writer;
 
     writer?.({
@@ -13,7 +12,21 @@ export const weatherTool = tool(
       message: `Fetching weather for ${city}...`,
     });
 
-    const { data } = await axios.get(`https://wttr.in/${city}?format=j2`);
+    const apiKey = process.env.OPENWEATHER_API_KEY;
+    if (!apiKey) {
+      throw new Error(
+        "OpenWeatherMap API key not found. Please set OPENWEATHER_API_KEY environment variable."
+      );
+    }
+
+    const { data } = await axios.get(
+      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
+    );
+
+    const temperature = data.main.temp;
+    const description = data.weather[0].description;
+    const humidity = data.main.humidity;
+    const windSpeed = data.wind.speed;
 
     writer?.({
       type: "progress",
@@ -21,7 +34,7 @@ export const weatherTool = tool(
       message: "Weather fetched successfully",
     });
 
-    return data;
+    return `Weather in ${city}: ${description}, Temperature: ${temperature}°C, Humidity: ${humidity}%, Wind Speed: ${windSpeed} m/s`;
   },
   {
     name: "get_weather",
