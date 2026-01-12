@@ -11,6 +11,7 @@
   "dependencies": {
     "@ai-sdk/langchain": "^2.0.25",
     "@ai-sdk/react": "^3.0.21",
+    "@google/generative-ai": "^0.24.1",
     "@langchain/core": "^1.1.12",
     "@langchain/groq": "^1.0.2",
     "@langchain/langgraph": "^1.0.7",

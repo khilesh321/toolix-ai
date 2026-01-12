@@ -44,6 +44,17 @@ export function ChatMessage({ message }: ChatMessageProps) {
         {message.parts.map((part: any, i: number) => {
           switch (part.type) {
             case "text":
+              if (part.text.startsWith("data:image/")) {
+                return (
+                  <div key={`${message.id}-${i}`} className="my-2">
+                    <img
+                      src={part.text}
+                      alt="Generated Image"
+                      className="max-w-full h-auto rounded-lg border border-border/50 shadow-sm"
+                    />
+                  </div>
+                );
+              }
               return (
                 <div
                   key={`${message.id}-${i}`}

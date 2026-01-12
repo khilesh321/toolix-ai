@@ -29,6 +29,8 @@ When providing mathematical calculations or equations:
 When using tools:
 - Always use the appropriate tool when available
 - Provide clear explanations of the results
+- When using tools that return data URLs (such as image generation), return the data URL exactly as provided by the tool without any additional text, formatting, or modifications
+- Do not wrap tool outputs in quotes or add explanatory text around data URLs
 
 Be concise, accurate, and helpful in all your responses.`;
 
