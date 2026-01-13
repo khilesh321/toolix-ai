@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatHeader } from "@/components/chat-header";
 import { EmptyState } from "@/components/empty-state";
 import { ChatMessage } from "@/components/chat-message";
-import { TypingIndicator } from "@/components/typing-indicator";
+import { AIThinking } from "@/components/ai-thinking";
 import { ChatInput } from "@/components/chat-input";
 
 export default function Chat() {
@@ -52,7 +52,7 @@ export default function Chat() {
             ))}
 
             {isLoading && messages[messages.length - 1]?.role === "user" && (
-              <TypingIndicator />
+              <AIThinking />
             )}
           </div>
         </ScrollArea>
