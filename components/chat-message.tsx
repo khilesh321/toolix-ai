@@ -7,6 +7,12 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { CodeBlock } from "@/components/code-block";
 import { Shimmer } from "./ai-elements/shimmer";
+import {
+  Sources,
+  SourcesContent,
+  SourcesTrigger,
+  Source,
+} from "./ai-elements/sources";
 
 interface ChatMessageProps {
   message: UIMessage;
@@ -173,6 +179,43 @@ export function ChatMessage({ message }: ChatMessageProps) {
                   `${message.id}-${i}`
                 );
                 if (imageFromTool) return imageFromTool;
+
+                if (part.toolName === "web_search") {
+                  let searchResults;
+                  try {
+                    if (typeof part.output === "string") {
+                      searchResults = JSON.parse(part.output);
+                    } else {
+                      searchResults = part.output;
+                    }
+
+                    if (!searchResults) return null;
+
+                    const results = Array.isArray(searchResults)
+                      ? searchResults
+                      : searchResults.results || searchResults.data || [];
+
+                    if (Array.isArray(results) && results.length > 0) {
+                      return (
+                        <Sources key={`${message.id}-${i}`}>
+                          <SourcesTrigger count={results.length} />
+                          <SourcesContent>
+                            {results.map((result: any, idx: number) => (
+                              <Source
+                                key={idx}
+                                href={result.url || result.link}
+                                title={result.title || `Source ${idx + 1}`}
+                              />
+                            ))}
+                          </SourcesContent>
+                        </Sources>
+                      );
+                    }
+                  } catch (error) {
+                    console.error("Error parsing web search results:", error);
+                  }
+                }
+
                 return null;
 
               default:
