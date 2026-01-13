@@ -58,7 +58,12 @@ export default function Chat() {
         </ScrollArea>
       </Card>
 
-      <ChatInput onChange={setInput} onSubmit={handleSubmit} />
+      <ChatInput
+        value={input}
+        onChange={setInput}
+        onSubmit={handleSubmit}
+        isLoading={isLoading}
+      />
     </div>
   );
 }
