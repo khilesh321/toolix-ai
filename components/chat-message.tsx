@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { CodeBlock } from "@/components/code-block";
+import { Shimmer } from "./ai-elements/shimmer";
 
 interface ChatMessageProps {
   message: UIMessage;
@@ -153,11 +154,16 @@ export function ChatMessage({ message }: ChatMessageProps) {
                     }`}
                   >
                     {success ? (
-                      <BadgeCheck className="size-3.5" />
+                      <div className="flex gap-2">
+                        <BadgeCheck className="size-3.5" />
+                        <span>{data.message}</span>
+                      </div>
                     ) : (
-                      <Loader2 className="size-3.5 animate-spin" />
+                      <div className="flex gap-2">
+                        <Loader2 className="size-3.5 animate-spin" />
+                        <Shimmer>{data.message}</Shimmer>
+                      </div>
                     )}
-                    <span>{data.message}</span>
                   </div>
                 );
 
