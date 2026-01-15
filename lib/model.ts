@@ -3,14 +3,14 @@ import { weatherTool } from "@/lib/tools/weather";
 import { webSearchTool } from "./tools/webSearch";
 import { calculatorTool } from "./tools/calculator";
 import { imageGenerationTool } from "./tools/imageGeneration";
-import { youtubeVideoSummarizerTool } from "./tools/youtubeVideoSummarizer";
+import { youtubeTranscriptFetcherTool } from "./tools/youtubeTranscriptFetcher";
 
 export const tools = [
   weatherTool,
   webSearchTool,
   calculatorTool,
   imageGenerationTool,
-  youtubeVideoSummarizerTool,
+  youtubeTranscriptFetcherTool,
 ];
 
 export const model = new ChatGroq({
