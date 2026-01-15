@@ -14,19 +14,82 @@ import {
   Source,
 } from "./ai-elements/sources";
 
+const markdownComponents = {
+  pre: ({ children }: any) => {
+    const child = children?.props;
+    const className = child?.className || "";
+    const code = child?.children || "";
+
+    return <CodeBlock className={className}>{code}</CodeBlock>;
+  },
+  code: ({ inline, children, ...props }: any) => {
+    if (inline) {
+      return (
+        <code className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50 text-xs font-mono">
+          {children}
+        </code>
+      );
+    }
+    return <code {...props}>{children}</code>;
+  },
+  table: ({ children, ...props }: any) => (
+    <div className="overflow-x-auto -mx-4 px-4 my-4">
+      <table {...props}>{children}</table>
+    </div>
+  ),
+};
+
+const markdownPlugins = {
+  remarkPlugins: [remarkGfm, remarkMath],
+  rehypePlugins: [rehypeKatex],
+};
+
+const processLatex = (text: string) => {
+  let processed = text
+    .replace(/\\\[/g, "$$")
+    .replace(/\\\]/g, "$$")
+    .replace(/\\\(/g, "$")
+    .replace(/\\\)/g, "$");
+  return processed;
+};
+
+type ToolSummary = {
+  summary: string;
+  keyPoints: string[];
+};
+
+const tryParseToolSummaryJson = (text: string): ToolSummary | null => {
+  const trimmed = text.trim();
+  if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (
+      parsed &&
+      typeof parsed.summary === "string" &&
+      (parsed.keyPoints === undefined ||
+        (Array.isArray(parsed.keyPoints) &&
+          parsed.keyPoints.every((point: any) => typeof point === "string")))
+    ) {
+      return {
+        summary: parsed.summary,
+        keyPoints: parsed.keyPoints ?? [],
+      };
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+};
+
 interface ChatMessageProps {
   message: UIMessage;
 }
 
 export function ChatMessage({ message }: ChatMessageProps) {
-  const processLatex = (text: string) => {
-    // Convert \[ \] to $$ $$
-    let processed = text.replace(/\\\[/g, "$$").replace(/\\\]/g, "$$");
-    // Convert \( \) to $ $
-    processed = processed.replace(/\\\(/g, "$").replace(/\\\)/g, "$");
-    return processed;
-  };
-
   const renderImage = (imageUrl: string, key: string) => (
     <img
       key={key}
@@ -84,7 +147,12 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
           return sortedParts.map((part: any, i: number) => {
             switch (part.type) {
-              case "text":
+              case "text": {
+                const toolSummaryData = tryParseToolSummaryJson(part.text);
+                if (toolSummaryData) {
+                  return null;
+                }
+
                 const imageFromText = parseAndRenderImage(
                   part.text,
                   `${message.id}-${i}`
@@ -92,6 +160,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                 if (imageFromText) {
                   return imageFromText;
                 }
+
                 return (
                   <div
                     key={`${message.id}-${i}`}
@@ -102,39 +171,14 @@ export function ChatMessage({ message }: ChatMessageProps) {
                     } prose prose-sm dark:prose-invert max-w-none [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted/50 [&_th]:px-3 [&_th]:py-2 [&_th]:font-semibold [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2`}
                   >
                     <ReactMarkdown
-                      remarkPlugins={[remarkGfm, remarkMath]}
-                      rehypePlugins={[rehypeKatex]}
-                      components={{
-                        pre: ({ children, ...props }: any) => {
-                          const child = children?.props;
-                          const className = child?.className || "";
-                          const code = child?.children || "";
-
-                          return (
-                            <CodeBlock className={className}>{code}</CodeBlock>
-                          );
-                        },
-                        code: ({ inline, children, ...props }: any) => {
-                          if (inline) {
-                            return (
-                              <code className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50 text-xs font-mono">
-                                {children}
-                              </code>
-                            );
-                          }
-                          return <code {...props}>{children}</code>;
-                        },
-                        table: ({ children, ...props }: any) => (
-                          <div className="overflow-x-auto -mx-4 px-4 my-4">
-                            <table {...props}>{children}</table>
-                          </div>
-                        ),
-                      }}
+                      {...markdownPlugins}
+                      components={markdownComponents}
                     >
                       {processLatex(part.text)}
                     </ReactMarkdown>
                   </div>
                 );
+              }
 
               case "data-progress":
                 const data = part.data as { message: string };

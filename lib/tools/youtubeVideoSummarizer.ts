@@ -99,7 +99,7 @@ Provide the response in JSON format with "summary" and "keyPoints" fields.`;
       message: "Summary generated successfully",
     });
 
-    return JSON.stringify({ summary: summaryText, keyPoints });
+    return { summary: summaryText, keyPoints };
   },
   {
     name: "youtube_video_summarizer",
