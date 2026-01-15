@@ -7,7 +7,7 @@ import { youtubeTranscriptFetcherTool } from "./tools/youtubeTranscriptFetcher";
 
 export const tools = [
   weatherTool,
-  // webSearchTool,
+  webSearchTool,
   calculatorTool,
   imageGenerationTool,
   youtubeTranscriptFetcherTool,
