@@ -360,9 +360,7 @@ export function ChatMessage({
                       </Sources>
                     );
 
-                    // toolParts.push(
-                    //   renderToolCard(part, `${message.id}-${i}`, { sources })
-                    // );
+                    toolParts.push(sources);
                     return;
                   }
                 }
