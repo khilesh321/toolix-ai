@@ -48,7 +48,7 @@ export default function Chat() {
             )}
 
             {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} />
+              <ChatMessage key={message.id} message={message} isStreaming={isLoading} />
             ))}
 
             {isLoading && messages[messages.length - 1]?.role === "user" && (

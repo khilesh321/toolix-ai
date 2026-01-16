@@ -1,3 +1,5 @@
+"use client";
+
 import { Bot, User, BadgeCheck, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { UIMessage } from "@ai-sdk/react";
@@ -13,6 +15,8 @@ import {
   SourcesTrigger,
   Source,
 } from "./ai-elements/sources";
+import { C1Component, ThemeProvider } from "@thesysai/genui-sdk";
+import "@crayonai/react-ui/styles/index.css";
 
 const markdownComponents = {
   pre: ({ children }: any) => {
@@ -53,16 +57,20 @@ const processLatex = (text: string) => {
   return processed;
 };
 
-type ToolSummary = {
-  summary: string;
-  keyPoints: string[];
-};
-
 interface ChatMessageProps {
   message: UIMessage;
+  onAction?: (payload: {
+    llmFriendlyMessage: string;
+    humanFriendlyMessage: string;
+  }) => void;
+  isStreaming?: boolean;
 }
 
-export function ChatMessage({ message }: ChatMessageProps) {
+export function ChatMessage({
+  message,
+  onAction,
+  isStreaming = false,
+}: ChatMessageProps) {
   const renderImage = (imageUrl: string, key: string) => (
     <img
       key={key}
@@ -87,6 +95,15 @@ export function ChatMessage({ message }: ChatMessageProps) {
     return null;
   };
 
+  const handleC1Action = ({
+    llmFriendlyMessage,
+    humanFriendlyMessage,
+  }: any) => {
+    if (onAction) {
+      onAction({ llmFriendlyMessage, humanFriendlyMessage });
+    }
+  };
+
   return (
     <div
       className={`flex gap-3 ${
@@ -109,6 +126,21 @@ export function ChatMessage({ message }: ChatMessageProps) {
         }`}
       >
         {(() => {
+          const textParts = message.parts.filter((p: any) => p.type === "text");
+          const text = textParts.map((part: any) => part.text).join("");
+
+          if (message.role === "assistant" && text) {
+            return (
+              <ThemeProvider mode="dark">
+                <C1Component
+                  isStreaming={isStreaming}
+                  c1Response={text}
+                  onAction={handleC1Action}
+                />
+              </ThemeProvider>
+            );
+          }
+
           const progressParts = message.parts.filter(
             (p: any) => p.type === "data-progress"
           );

@@ -1,4 +1,5 @@
 import { ChatGroq } from "@langchain/groq";
+import { ChatOpenAI } from "@langchain/openai"
 import { weatherTool } from "@/lib/tools/weather";
 import { webSearchTool } from "./tools/webSearch";
 import { calculatorTool } from "./tools/calculator";
@@ -13,7 +14,15 @@ export const tools = [
   youtubeTranscriptFetcherTool,
 ];
 
-export const model = new ChatGroq({
-  model: process.env.GROQ_MODEL_ID || "openai/gpt-oss-120b",
-  temperature: 0,
+// export const model = new ChatGroq({
+//   model: process.env.GROQ_MODEL_ID || "openai/gpt-oss-120b",
+//   temperature: 0,
+// }).bindTools(tools);
+
+export const model = new ChatOpenAI({
+  model: 'c1/openai/gpt-5/v-20251230',
+  configuration: {
+    baseURL: 'https://api.thesys.dev/v1/embed',
+    apiKey: process.env.THESYS_API_KEY,
+  }
 }).bindTools(tools);
