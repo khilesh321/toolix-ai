@@ -58,33 +58,6 @@ type ToolSummary = {
   keyPoints: string[];
 };
 
-// const tryParseToolSummaryJson = (text: string): ToolSummary | null => {
-//   const trimmed = text.trim();
-//   if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) {
-//     return null;
-//   }
-
-//   try {
-//     const parsed = JSON.parse(trimmed);
-//     if (
-//       parsed &&
-//       typeof parsed.summary === "string" &&
-//       (parsed.keyPoints === undefined ||
-//         (Array.isArray(parsed.keyPoints) &&
-//           parsed.keyPoints.every((point: any) => typeof point === "string")))
-//     ) {
-//       return {
-//         summary: parsed.summary,
-//         keyPoints: parsed.keyPoints ?? [],
-//       };
-//     }
-//   } catch {
-//     return null;
-//   }
-
-//   return null;
-// };
-
 interface ChatMessageProps {
   message: UIMessage;
 }
@@ -136,7 +109,6 @@ export function ChatMessage({ message }: ChatMessageProps) {
         }`}
       >
         {(() => {
-          // Separate progress messages and render them first
           const progressParts = message.parts.filter(
             (p: any) => p.type === "data-progress"
           );
@@ -148,11 +120,6 @@ export function ChatMessage({ message }: ChatMessageProps) {
           return sortedParts.map((part: any, i: number) => {
             switch (part.type) {
               case "text": {
-                // const toolSummaryData = tryParseToolSummaryJson(part.text);
-                // if (toolSummaryData) {
-                //   return null;
-                // }
-
                 const imageFromText = parseAndRenderImage(
                   part.text,
                   `${message.id}-${i}`
