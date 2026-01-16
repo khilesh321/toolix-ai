@@ -20,7 +20,7 @@ export const tools = [
 // }).bindTools(tools);
 
 export const model = new ChatOpenAI({
-  model: 'c1/openai/gpt-5/v-20251230',
+  model: 'c1-exp/anthropic/claude-haiku-4.5/v-20251230',
   configuration: {
     baseURL: 'https://api.thesys.dev/v1/embed',
     apiKey: process.env.THESYS_API_KEY,

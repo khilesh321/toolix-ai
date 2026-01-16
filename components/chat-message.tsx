@@ -26,6 +26,7 @@ const markdownComponents = {
 
     return <CodeBlock className={className}>{code}</CodeBlock>;
   },
+  p: ({ children }: any) => <div>{children}</div>,
   code: ({ inline, children, ...props }: any) => {
     if (inline) {
       return (
