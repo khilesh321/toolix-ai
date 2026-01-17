@@ -23,12 +23,14 @@ interface ChatMessageProps {
     llmFriendlyMessage: string;
     humanFriendlyMessage: string;
   }) => void;
+  sendMessage: (message: { text: string }) => void;
   isStreaming?: boolean;
 }
 
 export function ChatMessage({
   message,
   onAction,
+  sendMessage,
   isStreaming = false,
 }: ChatMessageProps) {
   const renderImage = (imageUrl: string, key: string) => (
@@ -62,17 +64,17 @@ export function ChatMessage({
     return null;
   };
 
-  const handleC1Action = ({
-    llmFriendlyMessage,
-    humanFriendlyMessage,
-  }: {
-    llmFriendlyMessage: string;
-    humanFriendlyMessage: string;
-  }) => {
-    if (onAction) {
-      onAction({ llmFriendlyMessage, humanFriendlyMessage });
-    }
-  };
+  // const handleC1Action = ({
+  //   llmFriendlyMessage,
+  //   humanFriendlyMessage,
+  // }: {
+  //   llmFriendlyMessage: string;
+  //   humanFriendlyMessage: string;
+  // }) => {
+  //   if (onAction) {
+  //     onAction({ llmFriendlyMessage, humanFriendlyMessage });
+  //   }
+  // };
 
   return (
     <div
@@ -116,7 +118,13 @@ export function ChatMessage({
                 <C1Component
                   isStreaming={isStreaming}
                   c1Response={text}
-                  onAction={handleC1Action}
+                  onAction={(e: any) => {
+                    const { llmFriendlyMessage, humanFriendlyMessage } =
+                      e.params || {};
+                    if (llmFriendlyMessage && humanFriendlyMessage) {
+                      sendMessage({ text: llmFriendlyMessage });
+                    }
+                  }}
                 />
               </ThemeProvider>
             );
