@@ -1,4 +1,13 @@
-import { Bot, MapPin, Calculator, Code, Sparkles } from "lucide-react";
+import {
+  Bot,
+  MapPin,
+  Calculator,
+  Code,
+  Sparkles,
+  Image,
+  Search,
+  Video,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface EmptyStateProps {
@@ -9,7 +18,9 @@ const suggestions = [
   { icon: MapPin, text: "What's the weather in Mumbai?" },
   { icon: Calculator, text: "Calculate 903 + 834/4566 - 344 × 2" },
   { icon: Code, text: "Write a Python function to sort a list" },
-  { icon: Sparkles, text: "Explain quantum computing simply" },
+  { icon: Video, text: "Get the transcript of a YouTube video" },
+  { icon: Image, text: "Generate an image of a beautiful sunset" },
+  { icon: Search, text: "Search the web for latest AI news" },
 ];
 
 export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
