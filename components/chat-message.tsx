@@ -1,14 +1,10 @@
 "use client";
 
-import { Bot, User, BadgeCheck, Loader2, ChevronsUpDown } from "lucide-react";
+import { Bot, User, BadgeCheck, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { UIMessage } from "@ai-sdk/react";
 import ReactMarkdown from "react-markdown";
-import type { ReactNode } from "react";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import { CodeBlock } from "@/components/code-block";
+import Image from "next/image";
 import { Shimmer } from "./ai-elements/shimmer";
 import {
   Sources,
@@ -16,76 +12,10 @@ import {
   SourcesTrigger,
   Source,
 } from "./ai-elements/sources";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { C1Component, ThemeProvider } from "@thesysai/genui-sdk";
 import "@crayonai/react-ui/styles/index.css";
-
-const markdownComponents = {
-  pre: ({ children }: any) => {
-    const child = children?.props;
-    const className = child?.className || "";
-    const code = child?.children || "";
-
-    return <CodeBlock className={className}>{code}</CodeBlock>;
-  },
-  p: ({ children }: any) => <div>{children}</div>,
-  code: ({ inline, children, ...props }: any) => {
-    if (inline) {
-      return (
-        <code className="px-1.5 py-0.5 rounded bg-muted/50 border border-border/50 text-xs font-mono">
-          {children}
-        </code>
-      );
-    }
-    return <code {...props}>{children}</code>;
-  },
-  table: ({ children, ...props }: any) => (
-    <div className="overflow-x-auto -mx-4 px-4 my-4">
-      <table {...props}>{children}</table>
-    </div>
-  ),
-};
-
-const markdownPlugins = {
-  remarkPlugins: [remarkGfm, remarkMath],
-  rehypePlugins: [rehypeKatex],
-};
-
-const safeJsonParse = (value: unknown) => {
-  if (typeof value !== "string") {
-    return value;
-  }
-  try {
-    return JSON.parse(value);
-  } catch {
-    return value;
-  }
-};
-
-const formatToolPayload = (value: unknown) => {
-  if (value === null || value === undefined) {
-    return "";
-  }
-  if (typeof value === "string") {
-    return value.trim();
-  }
-  try {
-    return JSON.stringify(value, null, 2);
-  } catch {
-    return String(value);
-  }
-};
-
-const clampText = (value: string, limit: number) => {
-  if (value.length <= limit) {
-    return value;
-  }
-  return `${value.slice(0, limit)}…`;
-};
+import { markdownComponents, markdownPlugins } from "./markdown-config";
+import { safeJsonParse } from "@/lib/chat-utils";
 
 interface ChatMessageProps {
   message: UIMessage;
@@ -102,24 +32,31 @@ export function ChatMessage({
   isStreaming = false,
 }: ChatMessageProps) {
   const renderImage = (imageUrl: string, key: string) => (
-    <img
+    <Image
       key={key}
       src={imageUrl}
       alt="Generated Image"
+      width={500}
+      height={500}
       className="max-w-full h-auto rounded-lg shadow-md"
     />
   );
 
-  const parseAndRenderImage = (data: any, key: string) => {
-    let parsed;
+  const parseAndRenderImage = (data: unknown, key: string) => {
+    let parsed: unknown;
     try {
       if (typeof data === "string") {
         parsed = JSON.parse(data);
       } else {
         parsed = data;
       }
-      if (parsed.imageUrl && typeof parsed.imageUrl === "string") {
-        return renderImage(parsed.imageUrl, key);
+      if (
+        parsed &&
+        typeof parsed === "object" &&
+        "imageUrl" in parsed &&
+        typeof (parsed as { imageUrl: unknown }).imageUrl === "string"
+      ) {
+        return renderImage((parsed as { imageUrl: string }).imageUrl, key);
       }
     } catch {}
     return null;
@@ -128,62 +65,13 @@ export function ChatMessage({
   const handleC1Action = ({
     llmFriendlyMessage,
     humanFriendlyMessage,
-  }: any) => {
+  }: {
+    llmFriendlyMessage: string;
+    humanFriendlyMessage: string;
+  }) => {
     if (onAction) {
       onAction({ llmFriendlyMessage, humanFriendlyMessage });
     }
-  };
-
-  const renderToolCard = (
-    part: any,
-    key: string,
-    options?: { sources?: ReactNode }
-  ) => {
-    const toolName =
-      part.toolName || part.name || part.tool || part.type || "tool";
-    const status = part.status || part.state || part.phase || "";
-    const outputValue = safeJsonParse(part.output ?? part.result);
-    const outputText = clampText(formatToolPayload(outputValue), 8000);
-
-    return (
-      <div key={key} className="space-y-2">
-        <Collapsible defaultOpen={false}>
-          <div className="rounded-xl border border-border/60 bg-background/40 px-3 py-2 text-xs text-foreground/90">
-            <CollapsibleTrigger className="flex flex-wrap items-center gap-2 w-full justify-between">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                  Tool
-                </span>
-                <span className="font-medium text-foreground/90">
-                  {toolName}
-                </span>
-                {status && (
-                  <span className="rounded-full border border-border/60 bg-muted/60 px-2 py-0.5 text-[10px] text-muted-foreground">
-                    {status}
-                  </span>
-                )}
-              </div>
-              <span className="text-[10px] uppercase tracking-wide text-muted-foreground hover:text-foreground transition-colors">
-                Expand
-              </span>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              {outputText && !options?.sources && (
-                <div className="mt-2">
-                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-2">
-                    Output
-                  </div>
-                  <CodeBlock className="language-json">{outputText}</CodeBlock>
-                </div>
-              )}
-            </CollapsibleContent>
-          </div>
-          {options?.sources && (
-            <CollapsibleContent>{options.sources}</CollapsibleContent>
-          )}
-        </Collapsible>
-      </div>
-    );
   };
 
   return (
@@ -208,19 +96,19 @@ export function ChatMessage({
         }`}
       >
         {(() => {
-          const textParts = message.parts.filter((p: any) => p.type === "text");
-          const text = textParts.map((part: any) => part.text).join("");
+          const textParts = message.parts.filter((p) => p.type === "text");
+          const text = textParts.map((part) => part.text).join("");
 
           const progressParts = message.parts.filter(
-            (p: any) => p.type === "data-progress"
+            (p) => p.type === "data-progress"
           );
           const otherParts = message.parts.filter(
-            (p: any) => p.type !== "data-progress"
+            (p) => p.type !== "data-progress"
           );
           const sortedParts = [...progressParts, ...otherParts];
 
-          const toolParts: ReactNode[] = [];
-          const mainParts: ReactNode[] = [];
+          const toolParts: React.ReactNode[] = [];
+          const mainParts: React.ReactNode[] = [];
 
           if (message.role === "assistant" && text) {
             mainParts.push(
@@ -234,7 +122,7 @@ export function ChatMessage({
             );
           }
 
-          sortedParts.forEach((part: any, i: number) => {
+          sortedParts.forEach((part, i) => {
             switch (part.type) {
               case "text": {
                 if (message.role === "assistant" && text) {
@@ -329,7 +217,7 @@ export function ChatMessage({
                   return;
                 }
 
-                if (part.toolName === "web_search") {
+                if ((part as any).toolName === "web_search") {
                   const parsedOutput = safeJsonParse(part.output);
                   const results = Array.isArray(parsedOutput)
                     ? parsedOutput
@@ -337,16 +225,25 @@ export function ChatMessage({
 
                   if (Array.isArray(results) && results.length > 0) {
                     const sources = (
-                      <Sources>
+                      <Sources key={`${message.id}-sources-${i}`}>
                         <SourcesTrigger count={results.length} />
                         <SourcesContent>
-                          {results.map((result: any, idx: number) => (
-                            <Source
-                              key={idx}
-                              href={result.url || result.link}
-                              title={result.title || `Source ${idx + 1}`}
-                            />
-                          ))}
+                          {results.map(
+                            (
+                              result: {
+                                url?: string;
+                                link?: string;
+                                title?: string;
+                              },
+                              idx: number
+                            ) => (
+                              <Source
+                                key={idx}
+                                href={result.url || result.link || ""}
+                                title={result.title || `Source ${idx + 1}`}
+                              />
+                            )
+                          )}
                         </SourcesContent>
                       </Sources>
                     );
@@ -355,8 +252,6 @@ export function ChatMessage({
                     return;
                   }
                 }
-
-                // toolParts.push(renderToolCard(part, `${message.id}-${i}`));
 
                 return;
 

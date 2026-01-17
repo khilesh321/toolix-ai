@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     "@crayonai/react-ui",
     "@crayonai/react-core",
   ],
+  images: {
+    domains: ['res.cloudinary.com']
+  }
 };
 
 export default nextConfig;
