@@ -55,7 +55,6 @@ const markdownPlugins = {
   rehypePlugins: [rehypeKatex],
 };
 
-
 const safeJsonParse = (value: unknown) => {
   if (typeof value !== "string") {
     return value;
