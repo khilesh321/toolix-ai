@@ -55,14 +55,6 @@ const markdownPlugins = {
   rehypePlugins: [rehypeKatex],
 };
 
-const processLatex = (text: string) => {
-  let processed = text
-    .replace(/\\\[/g, "$$")
-    .replace(/\\\]/g, "$$")
-    .replace(/\\\(/g, "$")
-    .replace(/\\\)/g, "$");
-  return processed;
-};
 
 const safeJsonParse = (value: unknown) => {
   if (typeof value !== "string") {
@@ -271,7 +263,7 @@ export function ChatMessage({
                       {...markdownPlugins}
                       components={markdownComponents}
                     >
-                      {processLatex(part.text)}
+                      {part.text}
                     </ReactMarkdown>
                   </div>
                 );
