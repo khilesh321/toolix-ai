@@ -188,19 +188,14 @@ export function ChatMessage({
                         : "bg-blue-500/10 border-blue-500/20 text-blue-700 dark:text-blue-300"
                     }`}
                   >
-                    <span
-                      className={`size-1.5 rounded-full ${
-                        success ? "bg-emerald-500" : "bg-blue-500"
-                      }`}
-                    />
                     {success ? (
                       <span className="flex items-center gap-2 font-medium">
-                        <BadgeCheck className="size-3.5" />
+                        <BadgeCheck className="w-4 h-4" />
                         {data.message}
                       </span>
                     ) : (
                       <span className="flex items-center gap-2 font-medium">
-                        <Loader2 className="size-3.5 animate-spin" />
+                        <Loader2 className="w-4 h-4 animate-spin" />
                         <Shimmer>{data.message}</Shimmer>
                       </span>
                     )}
