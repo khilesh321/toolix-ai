@@ -4,7 +4,6 @@ import { Bot, User, BadgeCheck, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { UIMessage } from "@ai-sdk/react";
 import ReactMarkdown from "react-markdown";
-import Image from "next/image";
 import { Shimmer } from "./ai-elements/shimmer";
 import {
   Sources,
@@ -16,6 +15,9 @@ import { C1Component, ThemeProvider } from "@thesysai/genui-sdk";
 import "@crayonai/react-ui/styles/index.css";
 import { markdownComponents, markdownPlugins } from "./markdown-config";
 import { safeJsonParse } from "@/lib/chat-utils";
+import { PhotoSlider } from "react-photo-view";
+import "react-photo-view/dist/react-photo-view.css";
+import { useState } from "react";
 
 interface ChatMessageProps {
   message: UIMessage;
@@ -28,36 +30,8 @@ export function ChatMessage({
   sendMessage,
   isStreaming = false,
 }: ChatMessageProps) {
-  const renderImage = (imageUrl: string, key: string) => (
-    <Image
-      key={key}
-      src={imageUrl}
-      alt="Generated Image"
-      width={500}
-      height={500}
-      className="max-w-full h-auto rounded-lg shadow-md"
-    />
-  );
-
-  const parseAndRenderImage = (data: unknown, key: string) => {
-    let parsed: unknown;
-    try {
-      if (typeof data === "string") {
-        parsed = JSON.parse(data);
-      } else {
-        parsed = data;
-      }
-      if (
-        parsed &&
-        typeof parsed === "object" &&
-        "imageUrl" in parsed &&
-        typeof (parsed as { imageUrl: unknown }).imageUrl === "string"
-      ) {
-        return renderImage((parsed as { imageUrl: string }).imageUrl, key);
-      }
-    } catch {}
-    return null;
-  };
+  const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
+  const [currentImageUrl, setCurrentImageUrl] = useState("");
 
   return (
     <div
@@ -96,38 +70,40 @@ export function ChatMessage({
           const mainParts: React.ReactNode[] = [];
 
           if (message.role === "assistant" && text) {
-            const hasCloudinaryLink = /res\.cloudinary\.com/.test(text);
-            if (!hasCloudinaryLink) {
-              mainParts.push(
-                <ThemeProvider key={`${message.id}-c1`} mode="dark">
-                  <C1Component
-                    isStreaming={isStreaming}
-                    c1Response={text}
-                    onAction={(e: any) => {
-                      const { llmFriendlyMessage, humanFriendlyMessage } =
-                        e.params || {};
-                      if (llmFriendlyMessage && humanFriendlyMessage) {
-                        sendMessage({ text: llmFriendlyMessage });
+            mainParts.push(
+              <ThemeProvider key={`${message.id}-c1`} mode="dark">
+                <C1Component
+                  isStreaming={isStreaming}
+                  c1Response={text}
+                  onAction={(e: any) => {
+                    if (e.type === "open_url" && e.params?.url) {
+                      if (
+                        e.params.url.includes("cloudinary") ||
+                        e.params.url.includes("res.cloudinary.com")
+                      ) {
+                        setCurrentImageUrl(e.params.url);
+                        setPhotoViewerVisible(true);
+                      } else {
+                        window.open(e.params.url, "_blank");
                       }
-                    }}
-                  />
-                </ThemeProvider>
-              );
-            }
+                      return;
+                    }
+
+                    const { llmFriendlyMessage, humanFriendlyMessage } =
+                      e.params || {};
+                    if (llmFriendlyMessage && humanFriendlyMessage) {
+                      sendMessage({ text: llmFriendlyMessage });
+                    }
+                  }}
+                />
+              </ThemeProvider>
+            );
           }
 
           sortedParts.forEach((part, i) => {
             switch (part.type) {
               case "text": {
                 if (message.role === "assistant" && text) {
-                  return;
-                }
-                const imageFromText = parseAndRenderImage(
-                  part.text,
-                  `${message.id}-${i}`
-                );
-                if (imageFromText) {
-                  mainParts.push(imageFromText);
                   return;
                 }
 
@@ -196,15 +172,6 @@ export function ChatMessage({
               case "tool-result":
               case "tool-result-delta":
               case "dynamic-tool":
-                const imageFromTool = parseAndRenderImage(
-                  part.output,
-                  `${message.id}-${i}`
-                );
-                if (imageFromTool) {
-                  toolParts.push(imageFromTool);
-                  return;
-                }
-
                 if ((part as any).toolName === "web_search") {
                   const parsedOutput = safeJsonParse(part.output);
                   const results = Array.isArray(parsedOutput)
@@ -241,45 +208,6 @@ export function ChatMessage({
                   }
                 }
 
-                if ((part as any).toolName === "search_images") {
-                  const parsedOutput = safeJsonParse(part.output);
-                  const images = parsedOutput?.images || [];
-
-                  if (Array.isArray(images) && images.length > 0) {
-                    const imageElements = images
-                      .slice(0, 5)
-                      .map((img: any, idx: number) => (
-                        <div
-                          key={`${message.id}-image-${idx}`}
-                          className="mb-2"
-                        >
-                          <Image
-                            src={img.url}
-                            alt={img.title || `Image ${idx + 1}`}
-                            width={300}
-                            height={200}
-                            className="max-w-full h-auto rounded-lg shadow-md"
-                          />
-                          {img.title && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {img.title}
-                            </p>
-                          )}
-                        </div>
-                      ));
-
-                    toolParts.push(
-                      <div
-                        key={`${message.id}-images-${i}`}
-                        className="grid grid-cols-1 sm:grid-cols-2 gap-2"
-                      >
-                        {imageElements}
-                      </div>
-                    );
-                    return;
-                  }
-                }
-
                 return;
 
               default:
@@ -298,6 +226,18 @@ export function ChatMessage({
           </AvatarFallback>
         </Avatar>
       )}
+
+      <PhotoSlider
+        images={
+          currentImageUrl
+            ? [{ src: currentImageUrl, key: currentImageUrl }]
+            : []
+        }
+        visible={photoViewerVisible}
+        onClose={() => setPhotoViewerVisible(false)}
+        index={0}
+        onIndexChange={() => {}}
+      />
     </div>
   );
 }

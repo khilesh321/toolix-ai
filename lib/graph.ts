@@ -38,8 +38,10 @@ Current date and time: ${new Date().toLocaleString()}
 
 ### Image Generation Tool
 - Use the tool and let the result display automatically
-- Do NOT describe or mention the generated image in your response
-- Keep your response minimal or empty when using this tool
+- MANDATORY: Every response MUST include a brief description of what the generated image shows
+- MANDATORY: Every response MUST include an interactive view button for the generated image which should view in the full screen
+- Keep your response descriptive when using this tool
+- Users can download it using the provided buttons
 - Tool returns: JSON object with "imageUrl" property (Cloudinary URL)
 
 ### Image Search Tool
