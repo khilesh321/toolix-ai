@@ -1,5 +1,5 @@
 import { ChatGroq } from "@langchain/groq";
-import { ChatOpenAI } from "@langchain/openai"
+import { ChatOpenAI } from "@langchain/openai";
 import { weatherTool } from "@/lib/tools/weather";
 import { webSearchTool } from "./tools/webSearch";
 import { calculatorTool } from "./tools/calculator";
@@ -22,9 +22,9 @@ export const tools = [
 // }).bindTools(tools);
 
 export const model = new ChatOpenAI({
-  model: 'c1-exp/anthropic/claude-haiku-4.5/v-20251230',
+  model: "c1-exp/anthropic/claude-haiku-4.5/v-20251230",
   configuration: {
-    baseURL: 'https://api.thesys.dev/v1/embed',
+    baseURL: "https://api.thesys.dev/v1/embed",
     apiKey: process.env.THESYS_API_KEY,
-  }
+  },
 }).bindTools(tools);

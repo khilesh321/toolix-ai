@@ -16,24 +16,31 @@ export const imageSearchTool = tool(
       const cx = process.env.GOOGLE_CX;
 
       if (!apiKey || !cx) {
-        throw new Error("Google API key or Custom Search Engine ID not configured");
+        throw new Error(
+          "Google API key or Custom Search Engine ID not configured"
+        );
       }
 
-      const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query)}&searchType=image&num=10&safe=active`;
+      const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(
+        query
+      )}&searchType=image&num=10&safe=active`;
 
       const response = await fetch(url);
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(`Google API error: ${data.error?.message || 'Unknown error'}`);
+        throw new Error(
+          `Google API error: ${data.error?.message || "Unknown error"}`
+        );
       }
 
-      const images = data.items?.map((item: any) => ({
-        url: item.link,
-        title: item.title,
-        thumbnail: item.image?.thumbnailLink,
-        context: item.image?.contextLink,
-      })) || [];
+      const images =
+        data.items?.map((item: any) => ({
+          url: item.link,
+          title: item.title,
+          thumbnail: item.image?.thumbnailLink,
+          context: item.image?.contextLink,
+        })) || [];
 
       writer?.({
         type: "progress",
@@ -43,7 +50,8 @@ export const imageSearchTool = tool(
 
       return JSON.stringify({ images });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       writer?.({
         type: "progress",
         id: "image_search",
@@ -54,7 +62,8 @@ export const imageSearchTool = tool(
   },
   {
     name: "search_images",
-    description: "Search for images using Google Custom Search API. Returns a list of image URLs and metadata.",
+    description:
+      "Search for images using Google Custom Search API. Returns a list of image URLs and metadata.",
     schema: z.object({
       query: z.string().describe("The search query for finding images"),
     }),
