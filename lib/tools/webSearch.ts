@@ -3,10 +3,13 @@ import { TavilySearch } from "@langchain/tavily";
 import z from "zod";
 
 const webSearch = new TavilySearch({
-  maxResults: 3,
+  maxResults: 5,
+  searchDepth: "basic",
   topic: "general",
+  includeAnswer: true,
   includeImages: false,
 });
+
 
 export const webSearchTool = tool(
   async ({ query }: { query: string }, config:ToolRuntime) => {

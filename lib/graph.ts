@@ -10,7 +10,10 @@ import { model, tools } from "@/lib/model";
 
 const toolNode = new ToolNode(tools);
 
-const systemPrompt = `You are Toolix AI, a helpful and knowledgeable AI assistant with access to various tools.
+async function callModel(state: typeof MessagesAnnotation.State) {
+  const systemPrompt = `You are Toolix AI, a helpful and knowledgeable AI assistant with access to various tools.
+
+Current date and time: ${new Date().toLocaleString()}
 
 ## General Behavior
 - Be concise, accurate, and helpful in all responses
@@ -49,7 +52,6 @@ const systemPrompt = `You are Toolix AI, a helpful and knowledgeable AI assistan
 - Tool outputs (images, data, URLs) are displayed automatically - never repeat them in text
 - For non-tool responses, be informative and engaging`;
 
-async function callModel(state: typeof MessagesAnnotation.State) {
   const messages = [new SystemMessage(systemPrompt), ...state.messages];
   const response = await model.invoke(messages);
   return { messages: [response] };

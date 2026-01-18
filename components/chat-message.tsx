@@ -19,17 +19,12 @@ import { safeJsonParse } from "@/lib/chat-utils";
 
 interface ChatMessageProps {
   message: UIMessage;
-  onAction?: (payload: {
-    llmFriendlyMessage: string;
-    humanFriendlyMessage: string;
-  }) => void;
   sendMessage: (message: { text: string }) => void;
   isStreaming?: boolean;
 }
 
 export function ChatMessage({
   message,
-  onAction,
   sendMessage,
   isStreaming = false,
 }: ChatMessageProps) {
@@ -63,18 +58,6 @@ export function ChatMessage({
     } catch {}
     return null;
   };
-
-  // const handleC1Action = ({
-  //   llmFriendlyMessage,
-  //   humanFriendlyMessage,
-  // }: {
-  //   llmFriendlyMessage: string;
-  //   humanFriendlyMessage: string;
-  // }) => {
-  //   if (onAction) {
-  //     onAction({ llmFriendlyMessage, humanFriendlyMessage });
-  //   }
-  // };
 
   return (
     <div
@@ -113,21 +96,24 @@ export function ChatMessage({
           const mainParts: React.ReactNode[] = [];
 
           if (message.role === "assistant" && text) {
-            mainParts.push(
-              <ThemeProvider key={`${message.id}-c1`} mode="dark">
-                <C1Component
-                  isStreaming={isStreaming}
-                  c1Response={text}
-                  onAction={(e: any) => {
-                    const { llmFriendlyMessage, humanFriendlyMessage } =
-                      e.params || {};
-                    if (llmFriendlyMessage && humanFriendlyMessage) {
-                      sendMessage({ text: llmFriendlyMessage });
-                    }
-                  }}
-                />
-              </ThemeProvider>
-            );
+            const hasCloudinaryLink = /res\.cloudinary\.com/.test(text);
+            if (!hasCloudinaryLink) {
+              mainParts.push(
+                <ThemeProvider key={`${message.id}-c1`} mode="dark">
+                  <C1Component
+                    isStreaming={isStreaming}
+                    c1Response={text}
+                    onAction={(e: any) => {
+                      const { llmFriendlyMessage, humanFriendlyMessage } =
+                        e.params || {};
+                      if (llmFriendlyMessage && humanFriendlyMessage) {
+                        sendMessage({ text: llmFriendlyMessage });
+                      }
+                    }}
+                  />
+                </ThemeProvider>
+              );
+            }
           }
 
           sortedParts.forEach((part, i) => {
@@ -195,7 +181,6 @@ export function ChatMessage({
                       </span>
                     ) : (
                       <span className="flex items-center gap-2 font-medium">
-                        <Loader2 className="w-4 h-4 animate-spin" />
                         <Shimmer>{data.message}</Shimmer>
                       </span>
                     )}
