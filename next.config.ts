@@ -7,8 +7,13 @@ const nextConfig: NextConfig = {
     "@crayonai/react-core",
   ],
   images: {
-    domains: ['res.cloudinary.com']
-  }
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

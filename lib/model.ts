@@ -5,6 +5,7 @@ import { webSearchTool } from "./tools/webSearch";
 import { calculatorTool } from "./tools/calculator";
 import { imageGenerationTool } from "./tools/imageGeneration";
 import { youtubeTranscriptFetcherTool } from "./tools/youtubeTranscriptFetcher";
+import { imageSearchTool } from "./tools/imageSearch";
 
 export const tools = [
   weatherTool,
@@ -12,6 +13,7 @@ export const tools = [
   calculatorTool,
   imageGenerationTool,
   youtubeTranscriptFetcherTool,
+  imageSearchTool,
 ];
 
 // export const model = new ChatGroq({

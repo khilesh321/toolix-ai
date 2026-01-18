@@ -42,6 +42,12 @@ Current date and time: ${new Date().toLocaleString()}
 - Keep your response minimal or empty when using this tool
 - Tool returns: JSON object with "imageUrl" property (Cloudinary URL)
 
+### Image Search Tool
+- Use to find relevant images for visual queries or when users ask for pictures
+- Returns a JSON object with "images" array containing image URLs and metadata
+- Images are displayed automatically - do not describe them in text
+- Use for queries like "show me pictures of...", "find images of...", etc.
+
 ### YouTube Transcript Fetcher Tool
 - Use to retrieve transcripts from YouTube videos
 - Provide the video URL when using this tool

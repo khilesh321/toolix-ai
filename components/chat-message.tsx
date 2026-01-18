@@ -241,6 +241,45 @@ export function ChatMessage({
                   }
                 }
 
+                if ((part as any).toolName === "search_images") {
+                  const parsedOutput = safeJsonParse(part.output);
+                  const images = parsedOutput?.images || [];
+
+                  if (Array.isArray(images) && images.length > 0) {
+                    const imageElements = images
+                      .slice(0, 5)
+                      .map((img: any, idx: number) => (
+                        <div
+                          key={`${message.id}-image-${idx}`}
+                          className="mb-2"
+                        >
+                          <Image
+                            src={img.url}
+                            alt={img.title || `Image ${idx + 1}`}
+                            width={300}
+                            height={200}
+                            className="max-w-full h-auto rounded-lg shadow-md"
+                          />
+                          {img.title && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {img.title}
+                            </p>
+                          )}
+                        </div>
+                      ));
+
+                    toolParts.push(
+                      <div
+                        key={`${message.id}-images-${i}`}
+                        className="grid grid-cols-1 sm:grid-cols-2 gap-2"
+                      >
+                        {imageElements}
+                      </div>
+                    );
+                    return;
+                  }
+                }
+
                 return;
 
               default:
