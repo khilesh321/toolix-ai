@@ -40,7 +40,7 @@ export function ChatMessage({
       }`}
     >
       {message.role !== "user" && (
-        <Avatar className="size-8 border border-border/50 shadow-sm">
+        <Avatar className="size-8 border border-border/50 shadow-sm hidden md:block">
           <AvatarFallback className="bg-linear-to-br from-primary/20 to-primary/5">
             <Bot className="size-4 text-primary" />
           </AvatarFallback>
@@ -220,7 +220,7 @@ export function ChatMessage({
       </div>
 
       {message.role === "user" && (
-        <Avatar className="size-8 border border-border/50 shadow-sm">
+        <Avatar className="size-8 border border-border/50 shadow-sm hidden md:block">
           <AvatarFallback className="bg-linear-to-br from-foreground/10 to-foreground/5">
             <User className="size-4 text-foreground/70" />
           </AvatarFallback>
