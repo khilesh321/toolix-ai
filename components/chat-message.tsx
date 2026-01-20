@@ -131,7 +131,9 @@ export function ChatMessage({
                 const data = part.data as { message: string };
                 const success = data.message.includes("success=true");
                 const error = data.message.includes("success=false");
-                const displayMessage = data.message.replace(/success=(true|false)/, "").trim();
+                const displayMessage = data.message
+                  .replace(/success=(true|false)/, "")
+                  .trim();
 
                 let bgClass, borderClass, textClass, iconElement;
 

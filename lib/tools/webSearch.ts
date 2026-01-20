@@ -10,10 +10,8 @@ const webSearch = new TavilySearch({
   includeImages: false,
 });
 
-
 export const webSearchTool = tool(
-  async ({ query }: { query: string }, config:ToolRuntime) => {
-
+  async ({ query }: { query: string }, config: ToolRuntime) => {
     const writer = config.writer;
 
     const apiKey = process.env.TAVILY_API_KEY;
@@ -23,14 +21,16 @@ export const webSearchTool = tool(
         id: "web_search",
         message: "Error: Tavily API key not found success=false",
       });
-      throw new Error("Tavily API key not found. Please set TAVILY_API_KEY environment variable.");
+      throw new Error(
+        "Tavily API key not found. Please set TAVILY_API_KEY environment variable."
+      );
     }
 
     writer?.({
       type: "progress",
       id: "web_search",
       message: `Searching the web for "${query}"...`,
-    })
+    });
     const res = await webSearch.invoke({ query });
 
     writer?.({
