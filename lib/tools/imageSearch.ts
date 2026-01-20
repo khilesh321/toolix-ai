@@ -45,7 +45,7 @@ export const imageSearchTool = tool(
       writer?.({
         type: "progress",
         id: "image_search",
-        message: `Found ${images.length} images`,
+        message: `Image search completed: found ${images.length} images success=true`,
       });
 
       return JSON.stringify({ images });
@@ -55,7 +55,7 @@ export const imageSearchTool = tool(
       writer?.({
         type: "progress",
         id: "image_search",
-        message: `Error searching images: ${errorMessage}`,
+        message: `Error searching images: ${errorMessage} success=false`,
       });
       throw error;
     }

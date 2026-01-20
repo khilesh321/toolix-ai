@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, User, BadgeCheck, Loader2 } from "lucide-react";
+import { Bot, User, BadgeCheck, Loader2, AlertTriangle } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { UIMessage } from "@ai-sdk/react";
 import ReactMarkdown from "react-markdown";
@@ -129,35 +129,42 @@ export function ChatMessage({
 
               case "data-progress":
                 const data = part.data as { message: string };
-                const successKeywords = [
-                  "successfully",
-                  "fetched",
-                  "created",
-                  "updated",
-                  "completed",
-                ];
+                const success = data.message.includes("success=true");
+                const error = data.message.includes("success=false");
+                const displayMessage = data.message.replace(/success=(true|false)/, "").trim();
 
-                const success = successKeywords.some((keyword) =>
-                  data.message.includes(keyword)
-                );
+                let bgClass, borderClass, textClass, iconElement;
+
+                if (success) {
+                  bgClass = "bg-emerald-500/10";
+                  borderClass = "border-emerald-500/20";
+                  textClass = "text-emerald-700 dark:text-emerald-300";
+                  iconElement = <BadgeCheck className="w-4 h-4" />;
+                } else if (error) {
+                  bgClass = "bg-red-500/10";
+                  borderClass = "border-red-500/20";
+                  textClass = "text-red-700 dark:text-red-300";
+                  iconElement = <AlertTriangle className="w-4 h-4" />;
+                } else {
+                  bgClass = "bg-blue-500/10";
+                  borderClass = "border-blue-500/20";
+                  textClass = "text-blue-700 dark:text-blue-300";
+                  iconElement = null;
+                }
 
                 toolParts.push(
                   <div
                     key={`${message.id}-${i}`}
-                    className={`flex items-center gap-2 text-xs py-1.5 px-3 rounded-lg border shadow-sm ${
-                      success
-                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-300"
-                        : "bg-blue-500/10 border-blue-500/20 text-blue-700 dark:text-blue-300"
-                    }`}
+                    className={`flex items-center gap-2 text-xs py-1.5 px-3 rounded-lg border shadow-sm ${bgClass} ${borderClass} ${textClass}`}
                   >
-                    {success ? (
+                    {success || error ? (
                       <span className="flex items-center gap-2 font-medium">
-                        <BadgeCheck className="w-4 h-4" />
-                        {data.message}
+                        {iconElement}
+                        {displayMessage}
                       </span>
                     ) : (
                       <span className="flex items-center gap-2 font-medium">
-                        <Shimmer>{data.message}</Shimmer>
+                        <Shimmer>{displayMessage}</Shimmer>
                       </span>
                     )}
                   </div>

@@ -49,6 +49,11 @@ export const youtubeTranscriptFetcherTool = tool(
 
     const apiKey = process.env.SUPADATA_API_KEY;
     if (!apiKey) {
+      writer?.({
+        type: "progress",
+        id: "youtube_transcript_fetcher",
+        message: "Error: Supadata API key not found success=false",
+      });
       throw new Error(
         "Supadata API key not found. Please set SUPADATA_API_KEY environment variable."
       );
@@ -89,7 +94,7 @@ export const youtubeTranscriptFetcherTool = tool(
       id: "youtube_transcript_fetcher",
       message: `Transcript fetched successfully${
         metadata.wasTruncated ? " (optimized for length)" : ""
-      }`,
+      } success=true`,
     });
 
     return JSON.stringify({

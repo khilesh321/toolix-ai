@@ -14,6 +14,11 @@ export const weatherTool = tool(
 
     const apiKey = process.env.OPENWEATHER_API_KEY;
     if (!apiKey) {
+      writer?.({
+        type: "progress",
+        id: "weather",
+        message: "Error: OpenWeatherMap API key not found success=false",
+      });
       throw new Error(
         "OpenWeatherMap API key not found. Please set OPENWEATHER_API_KEY environment variable."
       );
@@ -31,7 +36,7 @@ export const weatherTool = tool(
     writer?.({
       type: "progress",
       id: "weather",
-      message: "Weather fetched successfully",
+      message: "Weather fetched successfully success=true",
     });
 
     return `Weather in ${city}: ${description}, Temperature: ${temperature}°C, Humidity: ${humidity}%, Wind Speed: ${windSpeed} m/s`;

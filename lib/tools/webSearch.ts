@@ -16,6 +16,16 @@ export const webSearchTool = tool(
 
     const writer = config.writer;
 
+    const apiKey = process.env.TAVILY_API_KEY;
+    if (!apiKey) {
+      writer?.({
+        type: "progress",
+        id: "web_search",
+        message: "Error: Tavily API key not found success=false",
+      });
+      throw new Error("Tavily API key not found. Please set TAVILY_API_KEY environment variable.");
+    }
+
     writer?.({
       type: "progress",
       id: "web_search",
@@ -26,7 +36,7 @@ export const webSearchTool = tool(
     writer?.({
       type: "progress",
       id: "web_search",
-      message: "Web search completed successfully",
+      message: "Web search completed successfully success=true",
     });
     return res;
   },

@@ -62,7 +62,7 @@ export const imageGenerationTool = tool(
       writer?.({
         type: "progress",
         id: "image_generation",
-        message: "Image Generated & uploaded successfully",
+        message: "Image Generated & uploaded successfully success=true",
       });
 
       const result = {
@@ -76,7 +76,7 @@ export const imageGenerationTool = tool(
       writer?.({
         type: "progress",
         id: "image_generation",
-        message: `Error generating image: ${errorMessage}`,
+        message: `Error generating image: ${errorMessage} success=false`,
       });
       throw error;
     }

@@ -42,7 +42,14 @@ export const calculatorTool = tool(
         break;
 
       case "divide":
-        if (b === 0) throw new Error("Division by zero");
+        if (b === 0) {
+          writer?.({
+            type: "progress",
+            id: "calculator",
+            message: "Error: Division by zero success=false",
+          });
+          throw new Error("Division by zero");
+        }
         result = (a ?? 0) / (b ?? 1);
         break;
 
@@ -57,7 +64,7 @@ export const calculatorTool = tool(
     writer?.({
       type: "progress",
       id: "calculator",
-      message: "Calculation completed",
+      message: "Calculation completed success=true",
     });
 
     return result;
