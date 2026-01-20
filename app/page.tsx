@@ -11,7 +11,7 @@ import { TypingIndicator } from "@/components/typing-indicator";
 import { ChatInput } from "@/components/chat-input";
 
 export default function Chat() {
-  const { messages, sendMessage, status } = useChat();
+  const { messages, sendMessage, status, stop } = useChat();
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const isLoading = status === "streaming" || status === "submitted";
@@ -63,7 +63,12 @@ export default function Chat() {
         </ScrollArea>
       </Card>
 
-      <ChatInput onChange={setInput} onSubmit={handleSubmit} />
+      <ChatInput
+        onChange={setInput}
+        onSubmit={handleSubmit}
+        isLoading={isLoading}
+        onStop={stop}
+      />
     </div>
   );
 }
