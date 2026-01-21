@@ -11,10 +11,13 @@ import { TypingIndicator } from "@/components/typing-indicator";
 import { ChatInput } from "@/components/chat-input";
 
 export default function Chat() {
-  const { messages, sendMessage, status, stop } = useChat();
+  const { messages, sendMessage, status, stop, setMessages, regenerate } =
+    useChat();
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const isLoading = status === "streaming" || status === "submitted";
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState("");
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -31,6 +34,33 @@ export default function Chat() {
 
   const handleSuggestionClick = (message: string) => {
     sendMessage({ text: message });
+  };
+
+  const handleStartEdit = (messageId: string, currentText: string) => {
+    stop();
+    setEditingMessageId(messageId);
+    setEditingText(currentText);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditingText("");
+  };
+
+  const handleSaveEdit = (messageId: string, newText: string) => {
+    if (!newText.trim()) return;
+    const messageIndex = messages.findIndex((msg) => msg.id === messageId);
+    if (messageIndex === -1) return;
+    const updatedMessage = {
+      ...messages[messageIndex],
+      parts: [{ type: "text" as const, text: newText }],
+    };
+    const truncatedMessages = messages.slice(0, messageIndex);
+    const newMessages = [...truncatedMessages, updatedMessage];
+    setMessages(newMessages);
+    setEditingMessageId(null);
+    setEditingText("");
+    regenerate({ messageId });
   };
 
   return (
@@ -53,6 +83,10 @@ export default function Chat() {
                 message={message}
                 sendMessage={sendMessage}
                 isStreaming={isLoading}
+                isEditing={editingMessageId === message.id}
+                onStartEdit={handleStartEdit}
+                onCancelEdit={handleCancelEdit}
+                onSaveEdit={handleSaveEdit}
               />
             ))}
 
