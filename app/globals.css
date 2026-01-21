@@ -126,7 +126,7 @@
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.12) transparent;
+    scrollbar-color: rgba(213, 213, 213, 0.411) transparent;
   }
 
   *::-webkit-scrollbar {
@@ -139,7 +139,7 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.12);
+    background-color: rgba(213, 213, 213, 0.411);
     border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: padding-box;
