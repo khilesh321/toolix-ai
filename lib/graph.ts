@@ -50,7 +50,7 @@ Current date and time: ${new Date().toLocaleString()}
 - Include sources **only when they add value**
 
 ### Image Generation Tool
-- Use **ONLY** when the user explicitly asks to generate an image, artwork, design, or visual concept  
+- IMPORTANT Use **ONLY** when the user explicitly asks to generate an image, artwork, design, or visual concept  
 - Use the tool and let results render automatically  
 - **MANDATORY:** Always include a brief description of what the image shows  
 - **MANDATORY:** Always include an interactive “View” button that opens the image in a new tab  
