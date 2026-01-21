@@ -17,7 +17,7 @@ const client = new OpenAI({
 export const imageGenerationTool = tool(
   async (
     { prompt }: { prompt: string },
-    config: ToolRuntime
+    config: ToolRuntime,
   ): Promise<string> => {
     const writer = config.writer;
 
@@ -56,7 +56,7 @@ export const imageGenerationTool = tool(
         {
           resource_type: "image",
           folder: "Toolix-ai/generated-images",
-        }
+        },
       );
 
       writer?.({
@@ -84,13 +84,13 @@ export const imageGenerationTool = tool(
   {
     name: "generate_image",
     description:
-      "Generate an image based on a text prompt using Flux 1 Schnell model via A4F API. Returns a URL reference to the generated image.",
+      "Generate a new, original image based on a text prompt using AI. Only use when the user explicitly requests image generation with phrases like 'generate an image', 'create an image', 'draw', or 'illustrate'. Do not use for finding existing images or logos.",
     schema: z.object({
       prompt: z
         .string()
         .describe(
-          "Detailed text description of the image to generate. Be descriptive for best results."
+          "Detailed text description of the image to generate. Be descriptive for best results.",
         ),
     }),
-  }
+  },
 );

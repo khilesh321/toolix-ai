@@ -11,9 +11,9 @@ export const tools = [
   weatherTool,
   webSearchTool,
   calculatorTool,
+  imageSearchTool,
   imageGenerationTool,
   youtubeTranscriptFetcherTool,
-  imageSearchTool,
 ];
 
 // export const model = new ChatGroq({
