@@ -99,14 +99,16 @@ export function ChatMessage({
       )}
 
       <div
-        className={`flex flex-col ${message.role === "user" ? "items-end" : "items-start"} group`}
+        className={`flex flex-col ${message.role === "user" ? "items-end" : "items-start"} group max-w-[90vw]`}
       >
         <div
-          className={`max-w-[calc(100vw-6rem)] sm:max-w-[85%] md:max-w-[80%] space-y-2 overflow-hidden wrap-break-word ${
-            message.role === "user"
-              ? "bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-3 shadow-md"
-              : "bg-muted/50 border border-border/50 rounded-2xl rounded-bl-md px-4 py-3"
-          } ${isEditing && message.role === "user" ? "!max-w-2xl" : ""}`}
+          className={`space-y-2 overflow-hidden break-words ${
+            isEditing && message.role === "user"
+              ? "w-full max-w-4xl bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-3 shadow-md"
+              : message.role === "user"
+                ? "w-full max-w-sm sm:max-w-md md:max-w-2xl bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-3 shadow-md"
+                : "w-full max-w-sm sm:max-w-md md:max-w-2xl bg-muted/50 border border-border/50 rounded-2xl rounded-bl-md px-4 py-3"
+          }`}
         >
           {isEditing && message.role === "user" ? (
             <div className="space-y-2 w-full">
@@ -114,9 +116,9 @@ export function ChatMessage({
                 value={localEditText}
                 onChange={(e) => setLocalEditText(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="w-full bg-transparent border-none outline-none resize-none text-sm leading-relaxed min-h-[8rem] max-h-[20rem]"
+                className="w-full bg-transparent border-none outline-none resize-none text-sm leading-relaxed min-h-[10rem] max-h-[25rem]"
                 autoFocus
-                rows={Math.max(5, localEditText.split("\n").length)}
+                rows={Math.max(6, localEditText.split("\n").length)}
               />
               <div className="flex gap-2 justify-end">
                 <button
@@ -196,7 +198,7 @@ export function ChatMessage({
                           part.text.includes("\\[") || part.text.includes("\\(")
                             ? "leading-[2.5]"
                             : "leading-relaxed"
-                        } prose prose-sm dark:prose-invert max-w-none [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted/50 [&_th]:px-3 [&_th]:py-2 [&_th]:font-semibold [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2`}
+                        } prose prose-sm dark:prose-invert max-w-none overflow-x-auto [&_table]:border [&_table]:border-border [&_table]:border-collapse [&_th]:border [&_th]:border-border [&_th]:bg-muted/50 [&_th]:px-3 [&_th]:py-2 [&_th]:font-semibold [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_pre]:overflow-x-auto [&_code]:break-words`}
                       >
                         <ReactMarkdown
                           {...markdownPlugins}
