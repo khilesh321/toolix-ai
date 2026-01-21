@@ -23,7 +23,7 @@ export function ChatInput({
           "Generate images with descriptions...",
           "Ask me anything...",
         ]}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={onChange}
         onSubmit={onSubmit}
         isLoading={isLoading}
         onStop={onStop}

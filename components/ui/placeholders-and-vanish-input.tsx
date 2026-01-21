@@ -12,7 +12,7 @@ export function PlaceholdersAndVanishInput({
   onStop,
 }: {
   placeholders: string[];
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (value: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isLoading?: boolean;
   onStop?: () => void;
@@ -48,7 +48,7 @@ export function PlaceholdersAndVanishInput({
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const newDataRef = useRef<any[]>([]);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const [value, setValue] = useState("");
   const [animating, setAnimating] = useState(false);
 
@@ -67,7 +67,13 @@ export function PlaceholdersAndVanishInput({
     const fontSize = parseFloat(computedStyles.getPropertyValue("font-size"));
     ctx.font = `${fontSize * 2}px ${computedStyles.fontFamily}`;
     ctx.fillStyle = "#FFF";
-    ctx.fillText(value, 16, 40);
+
+    const lines = value.split("\n");
+    let y = 40;
+    lines.forEach((line) => {
+      ctx.fillText(line, 16, y);
+      y += fontSize * 2.5; // approximate line height
+    });
 
     const imageData = ctx.getImageData(0, 0, 800, 800);
     const pixelData = imageData.data;
@@ -107,6 +113,13 @@ export function PlaceholdersAndVanishInput({
   useEffect(() => {
     draw();
   }, [value, draw]);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+      inputRef.current.style.height = inputRef.current.scrollHeight + "px";
+    }
+  }, [value]);
 
   const animate = (start: number) => {
     const animateFrame = (pos: number = 0) => {
@@ -153,9 +166,19 @@ export function PlaceholdersAndVanishInput({
     animateFrame(start);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !animating) {
-      vanishAndSubmit();
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter") {
+      if (!e.shiftKey && !animating) {
+        e.preventDefault();
+        vanishAndSubmit();
+        const syntheticEvent = {
+          preventDefault: () => {},
+          target: inputRef.current,
+          currentTarget: inputRef.current,
+        } as unknown as React.FormEvent<HTMLFormElement>;
+        onSubmit && onSubmit(syntheticEvent);
+      }
+      // If shiftKey, allow default (insert new line)
     }
   };
 
@@ -167,7 +190,7 @@ export function PlaceholdersAndVanishInput({
     if (value && inputRef.current) {
       const maxX = newDataRef.current.reduce(
         (prev, current) => (current.x > prev ? current.x : prev),
-        0
+        0,
       );
       animate(maxX);
     }
@@ -181,32 +204,32 @@ export function PlaceholdersAndVanishInput({
   return (
     <form
       className={cn(
-        "w-full relative max-w-xl mx-auto bg-white dark:bg-zinc-800 h-12 rounded-full overflow-hidden shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),_0px_1px_0px_0px_rgba(25,28,33,0.02),_0px_0px_0px_1px_rgba(25,28,33,0.08)] transition duration-200",
-        value && "bg-gray-50"
+        "w-full relative max-w-xl mx-auto bg-white dark:bg-zinc-800 min-h-12 rounded-lg overflow-hidden shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),_0px_1px_0px_0px_rgba(25,28,33,0.02),_0px_0px_0px_1px_rgba(25,28,33,0.08)] transition duration-200",
+        value && "bg-gray-50",
       )}
       onSubmit={handleSubmit}
     >
       <canvas
         className={cn(
           "absolute pointer-events-none  text-base transform scale-50 top-[20%] left-2 sm:left-8 origin-top-left filter invert dark:invert-0 pr-20",
-          !animating ? "opacity-0" : "opacity-100"
+          !animating ? "opacity-0" : "opacity-100",
         )}
         ref={canvasRef}
       />
-      <input
+      <textarea
         onChange={(e) => {
           if (!animating) {
             setValue(e.target.value);
-            onChange && onChange(e);
+            onChange && onChange(e.target.value);
           }
         }}
         onKeyDown={handleKeyDown}
         ref={inputRef}
         value={value}
-        type="text"
+        rows={1}
         className={cn(
-          "w-full relative text-sm sm:text-base z-50 border-none dark:text-white bg-transparent text-black h-full rounded-full focus:outline-none focus:ring-0 pl-4 sm:pl-10 pr-20",
-          animating && "text-transparent dark:text-transparent"
+          "w-full relative text-sm sm:text-base z-50 border-none dark:text-white bg-transparent text-black h-12 rounded-lg focus:outline-none focus:ring-0 pl-4 sm:pl-12 pr-20 py-2 mt-1 resize-none max-h-32 overflow-y-auto",
+          animating && "text-transparent dark:text-transparent",
         )}
       />
 
@@ -219,7 +242,7 @@ export function PlaceholdersAndVanishInput({
             onStop?.();
           }
         }}
-        className="absolute right-2 top-1/2 z-50 -translate-y-1/2 h-8 w-8 rounded-full disabled:bg-gray-100 bg-black dark:bg-zinc-900 dark:disabled:bg-zinc-800 transition duration-200 flex items-center justify-center"
+        className="absolute right-2 top-1/2 z-50 -translate-y-1/2 h-8 w-8 rounded-lg disabled:bg-gray-100 bg-black dark:bg-zinc-900 dark:disabled:bg-zinc-800 transition duration-200 flex items-center justify-center"
       >
         {isLoading ? (
           <svg
