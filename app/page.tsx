@@ -63,6 +63,11 @@ export default function Chat() {
     regenerate({ messageId });
   };
 
+  const handleRetry = (messageId: string) => {
+    stop();
+    regenerate({ messageId });
+  };
+
   return (
     <div className="h-screen bg-linear-to-br from-background via-background to-muted/50 flex flex-col">
       <Card className="flex-1 flex flex-col rounded-none border-0 border-b shadow-none">
@@ -87,6 +92,7 @@ export default function Chat() {
                 onStartEdit={handleStartEdit}
                 onCancelEdit={handleCancelEdit}
                 onSaveEdit={handleSaveEdit}
+                onRetry={handleRetry}
               />
             ))}
 

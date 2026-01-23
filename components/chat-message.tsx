@@ -8,6 +8,7 @@ import {
   Edit3,
   Check,
   X,
+  RotateCcw,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { UIMessage } from "@ai-sdk/react";
@@ -35,6 +36,7 @@ interface ChatMessageProps {
   onStartEdit?: (messageId: string, currentText: string) => void;
   onCancelEdit?: () => void;
   onSaveEdit?: (messageId: string, newText: string) => void;
+  onRetry?: (messageId: string) => void;
 }
 
 export function ChatMessage({
@@ -45,6 +47,7 @@ export function ChatMessage({
   onStartEdit,
   onCancelEdit,
   onSaveEdit,
+  onRetry,
 }: ChatMessageProps) {
   const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
   const [currentImageUrl, setCurrentImageUrl] = useState("");
@@ -321,6 +324,18 @@ export function ChatMessage({
               title="Edit message"
             >
               <Edit3 className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {message.role === "assistant" && !isStreaming && (
+          <div className="flex justify-start mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={() => onRetry?.(message.id)}
+              className="p-1.5 rounded-md hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
+              title="Retry message"
+            >
+              <RotateCcw className="w-4 h-4" />
             </button>
           </div>
         )}
