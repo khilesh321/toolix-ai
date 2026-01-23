@@ -18,6 +18,7 @@ export default function Chat() {
   const isLoading = status === "streaming" || status === "submitted";
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
+  const [mode, setMode] = useState("General");
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -28,7 +29,7 @@ export default function Chat() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
-    sendMessage({ text: input });
+    sendMessage({ text: input }, { body: { mode } });
     setInput("");
   };
 
@@ -71,7 +72,7 @@ export default function Chat() {
   return (
     <div className="h-screen bg-linear-to-br from-background via-background to-muted/50 flex flex-col">
       <Card className="flex-1 flex flex-col rounded-none border-0 border-b shadow-none">
-        <ChatHeader />
+        <ChatHeader mode={mode} onModeChange={setMode} />
 
         <ScrollArea
           ref={scrollRef}

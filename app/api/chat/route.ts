@@ -5,15 +5,16 @@ import { buildGraph } from "@/lib/graph";
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const { messages }: { messages: UIMessage[] } = await req.json();
+  const { messages, mode }: { messages: UIMessage[]; mode?: string } =
+    await req.json();
 
-  const graph = buildGraph();
+  const graph = buildGraph(mode);
 
   const langchainMessages = await toBaseMessages(messages);
 
   const stream = await graph.stream(
     { messages: langchainMessages },
-    { streamMode: ["values", "messages", "custom"] }
+    { streamMode: ["values", "messages", "custom"] },
   );
 
   return createUIMessageStreamResponse({

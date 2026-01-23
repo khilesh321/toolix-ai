@@ -26,6 +26,7 @@
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-scroll-area": "^1.2.10",
+    "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.4",
     "@supadata/js": "^1.3.2",
     "@thesysai/genui-sdk": "^0.7.16",
