@@ -18,9 +18,11 @@ export function ChatInput({
       <PlaceholdersAndVanishInput
         placeholders={[
           "Ask about the weather in any city...",
+          "Get transcripts from YouTube videos...",
           "Calculate mathematical expressions...",
           "Search the web for information...",
           "Generate images with descriptions...",
+          "Search for images online...",
           "Ask me anything...",
         ]}
         onChange={onChange}
