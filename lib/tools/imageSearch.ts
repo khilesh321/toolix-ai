@@ -1,6 +1,19 @@
 import { tool, ToolRuntime } from "@langchain/core/tools";
 import z from "zod";
 
+interface GoogleImageItem {
+  link: string;
+  title: string;
+  image?: {
+    thumbnailLink?: string;
+    contextLink?: string;
+  };
+}
+
+interface GoogleImagesResponse {
+  items?: GoogleImageItem[];
+}
+
 export const imageSearchTool = tool(
   async ({ query }: { query: string }, config: ToolRuntime) => {
     const writer = config.writer;
@@ -26,7 +39,7 @@ export const imageSearchTool = tool(
       )}&searchType=image&num=10&safe=active`;
 
       const response = await fetch(url);
-      const data = await response.json();
+      const data: GoogleImagesResponse = await response.json();
 
       if (!response.ok) {
         throw new Error(
@@ -35,7 +48,7 @@ export const imageSearchTool = tool(
       }
 
       const images =
-        data.items?.map((item: any) => ({
+        data.items?.map((item: GoogleImageItem) => ({
           url: item.link,
           title: item.title,
           thumbnail: item.image?.thumbnailLink,

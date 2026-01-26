@@ -3,7 +3,6 @@ import {
   MapPin,
   Calculator,
   Code,
-  Sparkles,
   Image,
   Search,
   Video,

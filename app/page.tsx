@@ -17,7 +17,6 @@ export default function Chat() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const isLoading = status === "streaming" || status === "submitted";
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
-  const [editingText, setEditingText] = useState("");
   const [mode, setMode] = useState("General");
 
   useEffect(() => {
@@ -37,15 +36,13 @@ export default function Chat() {
     sendMessage({ text: message });
   };
 
-  const handleStartEdit = (messageId: string, currentText: string) => {
+  const handleStartEdit = (messageId: string) => {
     stop();
     setEditingMessageId(messageId);
-    setEditingText(currentText);
   };
 
   const handleCancelEdit = () => {
     setEditingMessageId(null);
-    setEditingText("");
   };
 
   const handleSaveEdit = (messageId: string, newText: string) => {
@@ -60,7 +57,6 @@ export default function Chat() {
     const newMessages = [...truncatedMessages, updatedMessage];
     setMessages(newMessages);
     setEditingMessageId(null);
-    setEditingText("");
     regenerate({ messageId });
   };
 

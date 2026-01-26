@@ -2,10 +2,25 @@ import { tool, ToolRuntime } from "@langchain/core/tools";
 import z from "zod";
 import { Supadata } from "@supadata/js";
 
+interface TranscriptMetadata {
+  originalLength: number;
+  optimizedLength: number;
+  wasTruncated: boolean;
+  compressionRatio: string;
+}
+
+interface TranscriptItem {
+  text: string;
+}
+
+interface TranscriptResponse {
+  content: TranscriptItem[];
+}
+
 function optimizeTranscript(
   text: string,
-  maxChars: number = 15000
-): { transcript: string; metadata: any } {
+  maxChars: number = 15000,
+): { transcript: string; metadata: TranscriptMetadata } {
   let cleaned = text
     .replace(/\b(um|uh|like|you know|actually|basically)\b/gi, "")
     .replace(/\s+/g, " ")
@@ -55,7 +70,7 @@ export const youtubeTranscriptFetcherTool = tool(
         message: "Error: Supadata API key not found success=false",
       });
       throw new Error(
-        "Supadata API key not found. Please set SUPADATA_API_KEY environment variable."
+        "Supadata API key not found. Please set SUPADATA_API_KEY environment variable.",
       );
     }
 
@@ -69,11 +84,11 @@ export const youtubeTranscriptFetcherTool = tool(
 
     if (typeof transcript === "string") {
       throw new Error(
-        `Transcript request queued with job ID: ${transcript}. Please try again later.`
+        `Transcript request queued with job ID: ${transcript}. Please try again later.`,
       );
     }
 
-    const transcriptData = transcript as { content: any[] };
+    const transcriptData = transcript as TranscriptResponse;
     if (
       !transcriptData ||
       !transcriptData.content ||
@@ -83,7 +98,7 @@ export const youtubeTranscriptFetcherTool = tool(
     }
 
     const transcriptText = transcriptData.content
-      .map((item: any) => item.text)
+      .map((item: TranscriptItem) => item.text)
       .join(" ");
 
     const { transcript: optimizedTranscript, metadata } =
@@ -116,5 +131,5 @@ export const youtubeTranscriptFetcherTool = tool(
         .optional()
         .describe("The full YouTube video URL to fetch transcript from"),
     }),
-  }
+  },
 );
