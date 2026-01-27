@@ -12,6 +12,9 @@ interface GoogleImageItem {
 
 interface GoogleImagesResponse {
   items?: GoogleImageItem[];
+  error?: {
+    message?: string;
+  };
 }
 
 export const imageSearchTool = tool(
