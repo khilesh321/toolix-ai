@@ -28,6 +28,15 @@ import { PhotoSlider } from "react-photo-view";
 import "react-photo-view/dist/react-photo-view.css";
 import { useState } from "react";
 
+interface ActionEvent {
+  type?: string;
+  params?: {
+    url?: string;
+    llmFriendlyMessage?: string;
+    humanFriendlyMessage?: string;
+  };
+}
+
 interface ChatMessageProps {
   message: UIMessage;
   sendMessage: (message: { text: string }) => void;
@@ -94,7 +103,10 @@ export function ChatMessage({
       }`}
     >
       {message.role !== "user" && (
-        <Avatar className="size-8 border border-border/50 shadow-sm hidden md:block">
+        <Avatar
+          className="size-8 border border-border/50 shadow-sm hidden md:block"
+          aria-label="Assistant avatar"
+        >
           <AvatarFallback className="bg-linear-to-br from-primary/20 to-primary/5">
             <Bot className="size-4 text-primary" />
           </AvatarFallback>
@@ -105,7 +117,7 @@ export function ChatMessage({
         className={`flex flex-col ${message.role === "user" ? "items-end" : "items-start"} group max-w-[90vw]`}
       >
         <div
-          className={`space-y-2 overflow-hidden break-words ${
+          className={`space-y-2 overflow-hidden wrap-break-word ${
             isEditing && message.role === "user"
               ? "w-full max-w-4xl bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-3 shadow-md"
               : message.role === "user"
@@ -119,7 +131,7 @@ export function ChatMessage({
                 value={localEditText}
                 onChange={(e) => setLocalEditText(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="w-full bg-transparent border-none outline-none resize-none text-sm leading-relaxed min-h-[10rem] max-h-[25rem]"
+                className="w-full bg-transparent border-none outline-none resize-none text-sm leading-relaxed min-h-40 max-h-100"
                 autoFocus
                 rows={Math.max(6, localEditText.split("\n").length)}
               />
@@ -128,6 +140,7 @@ export function ChatMessage({
                   onClick={handleCancelEdit}
                   className="p-1 rounded-md hover:bg-primary-foreground/10 transition-colors"
                   title="Cancel edit"
+                  aria-label="Cancel edit"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -135,6 +148,7 @@ export function ChatMessage({
                   onClick={handleSaveEdit}
                   className="p-1 rounded-md hover:bg-primary-foreground/10 transition-colors"
                   title="Save edit"
+                  aria-label="Save edit"
                 >
                   <Check className="w-4 h-4" />
                 </button>
@@ -162,7 +176,7 @@ export function ChatMessage({
                     <C1Component
                       isStreaming={isStreaming}
                       c1Response={text}
-                      onAction={(e: any) => {
+                      onAction={(e: ActionEvent) => {
                         if (e.type === "open_url" && e.params?.url) {
                           if (
                             e.params.url.includes("cloudinary") ||
@@ -201,7 +215,7 @@ export function ChatMessage({
                           part.text.includes("\\[") || part.text.includes("\\(")
                             ? "leading-[2.5]"
                             : "leading-relaxed"
-                        } prose prose-sm dark:prose-invert max-w-none overflow-x-auto [&_table]:border [&_table]:border-border [&_table]:border-collapse [&_th]:border [&_th]:border-border [&_th]:bg-muted/50 [&_th]:px-3 [&_th]:py-2 [&_th]:font-semibold [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_pre]:overflow-x-auto [&_code]:break-words`}
+                        } prose prose-sm dark:prose-invert max-w-none overflow-x-auto [&_table]:border [&_table]:border-border [&_table]:border-collapse [&_th]:border [&_th]:border-border [&_th]:bg-muted/50 [&_th]:px-3 [&_th]:py-2 [&_th]:font-semibold [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_pre]:overflow-x-auto [&_code]:wrap-break-word`}
                       >
                         <ReactMarkdown
                           {...markdownPlugins}
@@ -322,6 +336,7 @@ export function ChatMessage({
               onClick={handleStartEdit}
               className="p-1.5 rounded-md hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
               title="Edit message"
+              aria-label="Edit message"
             >
               <Edit3 className="w-4 h-4" />
             </button>
@@ -334,6 +349,7 @@ export function ChatMessage({
               onClick={() => onRetry?.(message.id)}
               className="p-1.5 rounded-md hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
               title="Retry message"
+              aria-label="Retry message"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
@@ -342,7 +358,10 @@ export function ChatMessage({
       </div>
 
       {message.role === "user" && (
-        <Avatar className="size-8 border border-border/50 shadow-sm hidden md:block">
+        <Avatar
+          className="size-8 border border-border/50 shadow-sm hidden md:block"
+          aria-label="User avatar"
+        >
           <AvatarFallback className="bg-linear-to-br from-foreground/10 to-foreground/5">
             <User className="size-4 text-foreground/70" />
           </AvatarFallback>
