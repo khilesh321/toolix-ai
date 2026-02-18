@@ -105,6 +105,8 @@ export default function Chat() {
         onSubmit={handleSubmit}
         isLoading={isLoading}
         onStop={stop}
+        mode={mode}
+        onModeChange={setMode}
       />
     </div>
   );
