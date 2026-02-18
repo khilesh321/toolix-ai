@@ -29,12 +29,16 @@ export function ChatHeader({ mode, onModeChange }: ChatHeaderProps) {
           </div>
         </div>
         <Select value={mode} onValueChange={onModeChange}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Select mode" />
+          <SelectTrigger className="w-fit min-w-40 h-30 hover:bg-accent/50 transition-colors">
+            <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent
+            align="end"
+            className="**:data-[slot=select-scroll-up-button]:hidden **:data-[slot=select-scroll-down-button]:hidden"
+          >
             <SelectItem value="General">General</SelectItem>
             <SelectItem value="Study and Learn">Study and Learn</SelectItem>
+            {/* <SelectItem value="Research">Research</SelectItem> */}
           </SelectContent>
         </Select>
       </CardTitle>
