@@ -1,357 +1,631 @@
-import React from "react";
+"use client";
 
-export default function page() {
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
+import {
+  ArrowRight,
+  Bot,
+  Calculator,
+  CloudSun,
+  Github,
+  Globe,
+  Image as ImageIcon,
+  Layers,
+  Search,
+  Sparkles,
+  Video,
+  Zap,
+  Code,
+  MessageSquare,
+  ChevronDown,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Shimmer } from "@/components/ai-elements/shimmer";
+import { cn } from "@/lib/utils";
+
+const CYCLING_WORDS = [
+  "Web Search",
+  "Image Generation",
+  "YouTube Summarizer",
+  "Weather Lookup",
+  "Generative UI",
+];
+
+const FEATURES = [
+  {
+    icon: Globe,
+    title: "Web Search",
+    description:
+      "Search the web in real-time for current events, news, and specific information.",
+    color: "text-blue-400",
+    bg: "from-blue-500/20 to-blue-500/5",
+    border: "border-blue-500/20",
+  },
+  {
+    icon: ImageIcon,
+    title: "Image Generation",
+    description:
+      "Generate original images from text prompts using AI-powered models.",
+    color: "text-purple-400",
+    bg: "from-purple-500/20 to-purple-500/5",
+    border: "border-purple-500/20",
+  },
+  {
+    icon: Video,
+    title: "YouTube Summarizer",
+    description:
+      "Fetch and intelligently summarize YouTube video transcripts instantly.",
+    color: "text-red-400",
+    bg: "from-red-500/20 to-red-500/5",
+    border: "border-red-500/20",
+  },
+  {
+    icon: CloudSun,
+    title: "Weather Lookup",
+    description:
+      "Get current weather conditions for any city worldwide in seconds.",
+    color: "text-amber-400",
+    bg: "from-amber-500/20 to-amber-500/5",
+    border: "border-amber-500/20",
+  },
+  {
+    icon: Calculator,
+    title: "Calculator",
+    description:
+      "Perform accurate mathematical calculations with step-by-step results.",
+    color: "text-emerald-400",
+    bg: "from-emerald-500/20 to-emerald-500/5",
+    border: "border-emerald-500/20",
+  },
+  {
+    icon: Search,
+    title: "Image Search",
+    description:
+      "Find images from across the web using Google Custom Search integration.",
+    color: "text-cyan-400",
+    bg: "from-cyan-500/20 to-cyan-500/5",
+    border: "border-cyan-500/20",
+  },
+];
+
+const TECH_STACK = [
+  { name: "Next.js 16", icon: Code },
+  { name: "React 19", icon: Zap },
+  { name: "LangGraph", icon: Layers },
+  { name: "Thesys C1", icon: Sparkles },
+  { name: "Vercel AI SDK", icon: MessageSquare },
+  { name: "shadcn/ui", icon: Layers },
+  { name: "Tailwind CSS", icon: Code },
+  { name: "Framer Motion", icon: Zap },
+];
+
+function FadeIn({
+  children,
+  className,
+  delay = 0,
+  direction = "up",
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+  direction?: "up" | "down" | "left" | "right";
+}) {
+  const directionMap = {
+    up: { y: 40, x: 0 },
+    down: { y: -40, x: 0 },
+    left: { x: 40, y: 0 },
+    right: { x: -40, y: 0 },
+  };
+
   return (
-    <main className="min-h-screen relative overflow-hidden font-sans">
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#050816] via-[#0b0820] to-[#02030a]" />
+    <motion.div
+      initial={{ opacity: 0, ...directionMap[direction] }}
+      whileInView={{ opacity: 1, x: 0, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.6, delay, ease: [0.21, 0.47, 0.32, 0.98] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
-      <section className="relative py-24 px-6 sm:px-12 lg:px-24">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row items-center gap-12">
-            <div className="w-full lg:w-1/2">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-purple-400 to-cyan-300">
-                Toolix AI – Beyond Chat. Into Action.
-              </h1>
-              <p className="mt-6 text-lg sm:text-xl text-gray-300 max-w-2xl">
-                A tool-enabled AI agent with Generative UI, intelligent
-                workflows, and real-time streaming responses.
-              </p>
+function CyclingText() {
+  const [index, setIndex] = useState(0);
 
-              <div className="mt-8 flex flex-wrap gap-3">
-                <a className="inline-flex items-center gap-3 px-5 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-500 shadow-lg hover:from-purple-500 hover:to-indigo-400 transition-all text-white">
-                  Try Toolix
-                </a>
-                <a className="inline-flex items-center gap-3 px-5 py-3 rounded-lg border border-white/10 text-gray-100/90 hover:bg-white/5 transition">
-                  Watch Demo
-                </a>
-              </div>
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % CYCLING_WORDS.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
 
-              <p className="mt-6 text-sm text-gray-400">
-                It doesn’t just answer. It performs.
-              </p>
-            </div>
+  return (
+    <span className="inline-flex h-[1.2em] overflow-hidden relative align-bottom">
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={CYCLING_WORDS[index]}
+          initial={{ y: 20, opacity: 0, filter: "blur(4px)" }}
+          animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+          exit={{ y: -20, opacity: 0, filter: "blur(4px)" }}
+          transition={{ duration: 0.35, ease: "easeInOut" }}
+          className="inline-block bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent font-bold"
+        >
+          {CYCLING_WORDS[index]}
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  );
+}
 
-            <div className="w-full lg:w-1/2">
-              <div className="relative mx-auto max-w-3xl">
-                <div className="rounded-2xl bg-white/3 backdrop-blur-md border border-white/6 p-6 shadow-[0_10px_40px_rgba(10,8,30,0.6)]">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="h-2 w-36 rounded-full bg-gradient-to-r from-purple-400 to-cyan-300 animate-pulse" />
-                      <p className="mt-3 text-sm text-gray-300">
-                        Live demo • Real-time streaming
-                      </p>
-                    </div>
-                    <div className="text-xs text-gray-400">
-                      Agent: LangGraph • Vercel AI
-                    </div>
-                  </div>
+function seededRandom(seed: number) {
+  const x = Math.sin(seed + 1) * 10000;
+  return x - Math.floor(x);
+}
 
-                  <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl bg-gradient-to-b from-white/6 to-white/3 border border-white/5">
-                      <h4 className="text-sm font-semibold text-white">
-                        Generative UI
-                      </h4>
-                      <p className="mt-2 text-xs text-gray-300">
-                        Components adapt to AI responses.
-                      </p>
-                    </div>
-                    <div className="p-4 rounded-xl bg-gradient-to-b from-white/6 to-white/3 border border-white/5">
-                      <h4 className="text-sm font-semibold text-white">
-                        Real-Time
-                      </h4>
-                      <p className="mt-2 text-xs text-gray-300">
-                        Streaming updates with low latency.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+function ParticleField() {
+  const [mounted, setMounted] = useState(false);
 
-                <div className="absolute -right-8 -bottom-12 w-72 h-72 rounded-full blur-3xl bg-gradient-to-br from-purple-500/30 to-cyan-400/20 mix-blend-screen animate-blob" />
-                <div className="absolute -left-12 top-8 w-40 h-40 rounded-full blur-2xl bg-gradient-to-tr from-indigo-600/25 to-purple-500/10 mix-blend-screen animate-blob delay-2000" />
-              </div>
-            </div>
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" />
+    );
+  }
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {Array.from({ length: 30 }).map((_, i) => {
+        const r = (offset: number) => seededRandom(i * 7 + offset);
+        return (
+          <motion.div
+            key={i}
+            className="absolute size-1 rounded-full bg-primary/20"
+            initial={{
+              x: `${r(0) * 100}%`,
+              y: `${r(1) * 100}%`,
+              scale: r(2) * 0.5 + 0.5,
+            }}
+            animate={{
+              y: [`${r(3) * 100}%`, `${r(4) * 100}%`, `${r(5) * 100}%`],
+              x: [`${r(6) * 100}%`, `${r(7) * 100}%`, `${r(8) * 100}%`],
+              opacity: [0, 0.6, 0],
+            }}
+            transition={{
+              duration: r(9) * 15 + 10,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function HeroSection() {
+  return (
+    <section className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.65_0.25_250/0.08)_0%,transparent_70%)]" />
+      <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-[radial-gradient(ellipse,oklch(0.65_0.25_250/0.06),transparent_70%)] blur-3xl" />
+      <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-[radial-gradient(ellipse,oklch(0.65_0.15_300/0.04),transparent_70%)] blur-3xl" />
+      <ParticleField />
+
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] }}
+        className="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto"
+      >
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{
+            delay: 0.2,
+            type: "spring",
+            stiffness: 200,
+            damping: 15,
+          }}
+          className="p-4 rounded-2xl bg-linear-to-br from-primary/20 to-primary/5 border border-primary/20 mb-8"
+        >
+          <Bot className="size-10 sm:size-12 text-primary" />
+        </motion.div>
+
+        <Shimmer
+          as="h1"
+          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-4"
+          duration={3}
+          spread={3}
+        >
+          Toolix AI
+        </Shimmer>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.6 }}
+          className="flex items-center gap-2 mb-6"
+        >
+          <Sparkles className="size-4 text-primary/60" />
+          <span className="text-lg sm:text-xl text-muted-foreground font-medium">
+            Tool-Enabled AI Agent
+          </span>
+          <Sparkles className="size-4 text-primary/60" />
+        </motion.div>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.6 }}
+          className="text-lg sm:text-xl md:text-2xl text-muted-foreground/80 max-w-2xl mb-4"
+        >
+          Your intelligent assistant powered by <CyclingText />
+        </motion.p>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.75, duration: 0.6 }}
+          className="text-sm sm:text-base text-muted-foreground/60 max-w-xl mb-10"
+        >
+          Built with LangGraph agents, Thesys C1 generative UI, and Vercel AI
+          SDK for real-time streaming — going beyond what traditional chatbots
+          can do.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9, duration: 0.6 }}
+          className="flex flex-col sm:flex-row items-center gap-4"
+        >
+          <Link href="/chat">
+            <Button
+              size="lg"
+              className="text-base px-8 py-6 rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
+            >
+              Try Toolix AI
+              <ArrowRight className="size-5 ml-1" />
+            </Button>
+          </Link>
+          <Link
+            href="https://github.com/khilesh-jawale"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button
+              variant="ghost"
+              size="lg"
+              className="text-base px-8 py-6 rounded-xl border border-border/60 hover:border-primary/30"
+            >
+              <Github className="size-5 mr-1" />
+              GitHub
+            </Button>
+          </Link>
+        </motion.div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.4, duration: 0.8 }}
+        className="absolute bottom-8 z-10"
+      >
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <ChevronDown className="size-6 text-muted-foreground/40" />
+        </motion.div>
+      </motion.div>
+    </section>
+  );
+}
+
+function FeaturesSection() {
+  return (
+    <section className="relative py-24 sm:py-32 px-4 sm:px-6">
+      <div className="max-w-6xl mx-auto">
+        <FadeIn className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border/60 bg-card/80 text-sm text-muted-foreground mb-6">
+            <Sparkles className="size-4 text-primary" />
+            Capabilities
           </div>
-        </div>
-      </section>
-
-      <section className="py-16 px-6 sm:px-12 lg:px-24">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="col-span-2 rounded-2xl p-8 bg-gradient-to-b from-white/3 to-white/5 border border-white/6 backdrop-blur-md">
-              <h3 className="text-2xl font-semibold text-white">
-                About Toolix AI
-              </h3>
-              <p className="mt-4 text-gray-300 max-w-3xl">
-                Toolix AI is a next-generation AI assistant built with Next.js
-                16 & React 19, LangGraph agents for multi-step workflows, Thesys
-                C1 for generative UI, Vercel AI SDK for real-time streaming, and
-                shadcn UI for design system.
-              </p>
-              <p className="mt-4 font-medium text-indigo-300">
-                It doesn’t just answer. It performs.
-              </p>
-            </div>
-
-            <aside className="rounded-2xl p-6 bg-white/3 border border-white/6 backdrop-blur-md">
-              <h4 className="text-lg font-semibold text-white">Tech Stack</h4>
-              <ul className="mt-4 space-y-2 text-sm text-gray-300">
-                <li>Next.js 16 & React 19</li>
-                <li>LangGraph agents</li>
-                <li>Thesys C1 (Generative UI)</li>
-                <li>Vercel AI SDK</li>
-                <li>shadcn UI</li>
-              </ul>
-            </aside>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-12 px-6 sm:px-12 lg:px-24">
-        <div className="max-w-7xl mx-auto">
-          <h3 className="text-3xl font-semibold text-white">Core Features</h3>
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              [
-                "Generative UI",
-                "Dynamic interface that adapts based on AI responses",
-              ],
-              [
-                "Intelligent Workflows",
-                "Multi-step agent execution using LangGraph",
-              ],
-              [
-                "Real-Time Streaming",
-                "Instant response updates powered by Vercel AI SDK",
-              ],
-              ["Tool Integration", "Executes tasks, not just conversation"],
-              ["Multi-Model Support", "Compatible with various AI models"],
-            ].map((f, i) => (
-              <div
-                key={i}
-                className="p-6 rounded-xl bg-gradient-to-br from-white/4 to-white/6 border border-white/6 backdrop-blur-md hover:scale-[1.02] transition"
-              >
-                <h4 className="font-semibold text-white">{f[0]}</h4>
-                <p className="mt-2 text-sm text-gray-300">{f[1]}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-12 px-6 sm:px-12 lg:px-24">
-        <div className="max-w-7xl mx-auto">
-          <h3 className="text-3xl font-semibold text-white">
-            Why Toolix AI is Different
-          </h3>
-          <p className="mt-3 font-medium text-indigo-300">
-            Chatbots respond. Toolix executes.
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
+            What Can Toolix Do?
+          </h2>
+          <p className="text-muted-foreground/80 text-lg max-w-2xl mx-auto">
+            Six powerful tools that work together to handle complex tasks — from
+            searching the web to generating images.
           </p>
+        </FadeIn>
 
-          <div className="mt-6 overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="text-sm text-gray-400">
-                  <th className="py-3 pr-6">Traditional Chat AI</th>
-                  <th className="py-3">Toolix AI</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm text-gray-300">
-                <tr className="border-t border-white/6">
-                  <td className="py-4 pr-6">Static text responses</td>
-                  <td className="py-4">Dynamic generative UI</td>
-                </tr>
-                <tr className="border-t border-white/6">
-                  <td className="py-4 pr-6">Basic prompt interaction</td>
-                  <td className="py-4">Multi-step intelligent workflows</td>
-                </tr>
-                <tr className="border-t border-white/6">
-                  <td className="py-4 pr-6">Manual summarization</td>
-                  <td className="py-4">
-                    Structured YouTube summarizer with UI cards
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          {FEATURES.map((feature, i) => (
+            <FadeIn key={feature.title} delay={i * 0.08}>
+              <motion.div
+                whileHover={{ y: -4, scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="group relative rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-6 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-colors h-full"
+              >
+                <div
+                  className={cn(
+                    "p-3 rounded-xl bg-linear-to-br border w-fit mb-4",
+                    feature.bg,
+                    feature.border,
+                  )}
+                >
+                  <feature.icon className={cn("size-5", feature.color)} />
+                </div>
+                <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
+                  {feature.title}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {feature.description}
+                </p>
+              </motion.div>
+            </FadeIn>
+          ))}
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      <section className="py-12 px-6 sm:px-12 lg:px-24">
-        <div className="max-w-7xl mx-auto">
-          <h3 className="text-3xl font-semibold text-white">
-            YouTube Video Summarizer Showcase
-          </h3>
-          <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="rounded-2xl p-6 bg-white/3 border border-white/6 backdrop-blur-md">
-              <label className="text-sm text-gray-300">YouTube Link</label>
-              <div className="mt-3 flex gap-3">
-                <input
-                  placeholder="https://youtube.com/watch?v=..."
-                  className="flex-1 rounded-lg p-3 bg-transparent border border-white/8 text-white placeholder:text-gray-500"
-                />
-                <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-400 to-indigo-500 text-black font-semibold">
-                  Summarize
-                </button>
+function DifferentiatorsSection() {
+  return (
+    <section className="relative py-24 sm:py-32 px-4 sm:px-6">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,oklch(0.65_0.25_250/0.04)_0%,transparent_50%)]" />
+      <div className="max-w-6xl mx-auto relative z-10">
+        <FadeIn className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border/60 bg-card/80 text-sm text-muted-foreground mb-6">
+            <Zap className="size-4 text-primary" />
+            Beyond ChatGPT
+          </div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
+            What Makes Toolix Different
+          </h2>
+          <p className="text-muted-foreground/80 text-lg max-w-2xl mx-auto">
+            Not just another AI chatbot — Toolix brings capabilities that go
+            beyond text-only responses.
+          </p>
+        </FadeIn>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FadeIn direction="right" delay={0.1}>
+            <motion.div
+              whileHover={{ y: -4 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="group rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm p-8 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all h-full"
+            >
+              <div className="p-3 rounded-xl bg-linear-to-br from-purple-500/20 to-purple-500/5 border border-purple-500/20 w-fit mb-5">
+                <Layers className="size-6 text-purple-400" />
               </div>
-
-              <div className="mt-6 space-y-4">
-                <div className="p-4 rounded-lg bg-gradient-to-b from-white/6 to-white/4 border border-white/6">
-                  <h5 className="font-semibold text-white">Summary</h5>
-                  <p className="mt-2 text-sm text-gray-300">
-                    AI-generated concise summary displayed as a card with
-                    highlights.
+              <h3 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors">
+                Generative UI
+              </h3>
+              <p className="text-muted-foreground leading-relaxed mb-6">
+                Unlike ChatGPT&apos;s text-only responses, Toolix generates
+                adaptive, interactive UI components powered by Thesys C1 —
+                weather widgets, image galleries, data visualizations, and more
+                that render right in the chat.
+              </p>
+              <div className="rounded-xl border-2 border-dashed border-border/40 bg-muted/10 aspect-video flex items-center justify-center">
+                <div className="text-center">
+                  <ImageIcon className="size-8 text-muted-foreground/30 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground/40">
+                    Screenshot coming soon
                   </p>
                 </div>
+              </div>
+            </motion.div>
+          </FadeIn>
 
-                <div className="p-4 rounded-lg bg-gradient-to-b from-white/6 to-white/4 border border-white/6">
-                  <h5 className="font-semibold text-white">
-                    Key Points & Timestamps
-                  </h5>
-                  <ul className="mt-2 text-sm text-gray-300 space-y-2">
-                    <li>• 00:34 — Concept intro</li>
-                    <li>• 02:10 — Architecture overview</li>
-                  </ul>
-                </div>
-
-                <div className="p-4 rounded-lg bg-gradient-to-b from-white/6 to-white/4 border border-white/6">
-                  <h5 className="font-semibold text-white">
-                    Actionable Insights
-                  </h5>
-                  <p className="mt-2 text-sm text-gray-300">
-                    Suggested next steps and snippets for integration.
+          <FadeIn direction="left" delay={0.2}>
+            <motion.div
+              whileHover={{ y: -4 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="group rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm p-8 hover:border-red-500/30 hover:shadow-xl hover:shadow-red-500/5 transition-all h-full"
+            >
+              <div className="p-3 rounded-xl bg-linear-to-br from-red-500/20 to-red-500/5 border border-red-500/20 w-fit mb-5">
+                <Video className="size-6 text-red-400" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3 group-hover:text-red-400 transition-colors">
+                YouTube Video Summarizer
+              </h3>
+              <p className="text-muted-foreground leading-relaxed mb-6">
+                Paste any YouTube link and get an intelligent summary. Toolix
+                fetches the full transcript and analyzes it — no need to watch
+                the entire video to get the key insights.
+              </p>
+              <div className="rounded-xl border-2 border-dashed border-border/40 bg-muted/10 aspect-video flex items-center justify-center">
+                <div className="text-center">
+                  <Video className="size-8 text-muted-foreground/30 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground/40">
+                    Screenshot coming soon
                   </p>
                 </div>
+              </div>
+            </motion.div>
+          </FadeIn>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TechStackSection() {
+  return (
+    <section className="relative py-24 sm:py-32 px-4 sm:px-6">
+      <div className="max-w-6xl mx-auto">
+        <FadeIn className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border/60 bg-card/80 text-sm text-muted-foreground mb-6">
+            <Code className="size-4 text-primary" />
+            Tech Stack
+          </div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
+            Built With Modern Tech
+          </h2>
+          <p className="text-muted-foreground/80 text-lg max-w-2xl mx-auto">
+            A cutting-edge stack for building intelligent AI applications.
+          </p>
+        </FadeIn>
+
+        <div className="flex flex-wrap justify-center gap-4">
+          {TECH_STACK.map((tech, i) => (
+            <FadeIn key={tech.name} delay={i * 0.06}>
+              <motion.div
+                whileHover={{ y: -3, scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="group flex items-center gap-3 px-5 py-4 rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm hover:border-primary/40 hover:bg-primary/5 hover:shadow-lg hover:shadow-primary/5 transition-all"
+              >
+                <tech.icon className="size-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                <span className="text-sm font-medium whitespace-nowrap">
+                  {tech.name}
+                </span>
+              </motion.div>
+            </FadeIn>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function DemoPreviewSection() {
+  const { scrollYProgress } = useScroll();
+  const rotateX = useTransform(scrollYProgress, [0.5, 0.75], [8, 0]);
+  const scale = useTransform(scrollYProgress, [0.5, 0.75], [0.95, 1]);
+
+  return (
+    <section className="relative py-24 sm:py-32 px-4 sm:px-6">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,oklch(0.65_0.25_250/0.04)_0%,transparent_50%)]" />
+      <div className="max-w-4xl mx-auto relative z-10">
+        <FadeIn className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border/60 bg-card/80 text-sm text-muted-foreground mb-6">
+            <MessageSquare className="size-4 text-primary" />
+            Preview
+          </div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
+            See It In Action
+          </h2>
+          <p className="text-muted-foreground/80 text-lg max-w-2xl mx-auto">
+            A modern, responsive chat interface with real-time streaming and
+            interactive UI components.
+          </p>
+        </FadeIn>
+
+        <FadeIn>
+          <motion.div
+            style={{ rotateX, scale, transformPerspective: 1200 }}
+            className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm overflow-hidden shadow-2xl shadow-primary/5"
+          >
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-border/60 bg-card/80">
+              <div className="p-1.5 rounded-lg bg-linear-to-br from-primary/20 to-primary/5 border border-primary/20">
+                <Bot className="size-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Toolix AI</p>
+                <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  <Sparkles className="size-2.5" /> Tool-Enabled AI Agent
+                </p>
+              </div>
+              <div className="ml-auto flex gap-1.5">
+                <div className="size-3 rounded-full bg-muted/60" />
+                <div className="size-3 rounded-full bg-muted/60" />
+                <div className="size-3 rounded-full bg-muted/60" />
               </div>
             </div>
 
-            <div className="rounded-2xl p-6 bg-white/3 border border-white/6 backdrop-blur-md">
-              <h4 className="text-white font-semibold">Architecture</h4>
-              <div className="mt-6">
-                <svg viewBox="0 0 800 220" className="w-full h-48">
-                  <defs>
-                    <marker
-                      id="arrow"
-                      markerWidth="10"
-                      markerHeight="10"
-                      refX="8"
-                      refY="5"
-                      orient="auto"
-                    >
-                      <path d="M0 0 L10 5 L0 10 z" fill="#9f7aea" />
-                    </marker>
-                  </defs>
-                  <g fill="none" stroke="#6b7280" strokeWidth="2">
-                    <rect
-                      x="20"
-                      y="40"
-                      width="120"
-                      height="40"
-                      rx="8"
-                      fill="#0b1220"
-                      stroke="#4338ca"
-                    />
-                    <rect
-                      x="180"
-                      y="40"
-                      width="160"
-                      height="40"
-                      rx="8"
-                      fill="#0b1220"
-                      stroke="#6366f1"
-                    />
-                    <rect
-                      x="360"
-                      y="40"
-                      width="140"
-                      height="40"
-                      rx="8"
-                      fill="#0b1220"
-                      stroke="#06b6d4"
-                    />
-                    <rect
-                      x="520"
-                      y="40"
-                      width="200"
-                      height="40"
-                      rx="8"
-                      fill="#0b1220"
-                      stroke="#8b5cf6"
-                    />
-                    <path
-                      d="M140 60 L180 60"
-                      stroke="#9f7aea"
-                      markerEnd="url(#arrow)"
-                    />
-                    <path
-                      d="M340 60 L360 60"
-                      stroke="#9f7aea"
-                      markerEnd="url(#arrow)"
-                    />
-                    <path
-                      d="M500 60 L520 60"
-                      stroke="#9f7aea"
-                      markerEnd="url(#arrow)"
-                    />
-                    <text x="40" y="70" fill="#9ca3af" fontSize="12">
-                      User
-                    </text>
-                    <text x="210" y="70" fill="#9ca3af" fontSize="12">
-                      Next.js UI
-                    </text>
-                    <text x="380" y="70" fill="#9ca3af" fontSize="12">
-                      Vercel AI SDK
-                    </text>
-                    <text x="540" y="70" fill="#9ca3af" fontSize="12">
-                      LangGraph → Tools
-                    </text>
-                  </g>
-                </svg>
-
-                <p className="mt-4 text-sm text-gray-300">
-                  Flow: User → Next.js UI → Vercel AI SDK → LangGraph Agent →
-                  Tools → Generative UI Output
+            <div className="aspect-video bg-muted/10 flex items-center justify-center relative">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,oklch(0.65_0.25_250/0.03)_0%,transparent_60%)]" />
+              <div className="text-center relative z-10">
+                <Bot className="size-12 text-muted-foreground/20 mx-auto mb-3" />
+                <p className="text-muted-foreground/40 text-sm">
+                  Demo preview coming soon
+                </p>
+                <p className="text-muted-foreground/30 text-xs mt-1">
+                  Chat interface screenshot will go here
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </motion.div>
+        </FadeIn>
 
-      <section className="py-16 px-6 sm:px-12 lg:px-24">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-cyan-300">
-            Ready to Experience AI Beyond Chat?
-          </h2>
-          <p className="mt-4 text-gray-300">
-            Launch Toolix and let your agents do the work.
-          </p>
-          <div className="mt-8">
-            <button className="px-8 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-500 text-white shadow-xl hover:scale-105 transition-transform">
-              Launch Toolix
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <footer className="py-8 px-6 sm:px-12 lg:px-24 border-t border-white/6">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-sm text-gray-300">
-            Built by Khilesh Jawale •{" "}
-            <a
-              className="text-indigo-300"
-              href="https://github.com/khileshjawale"
+        <FadeIn delay={0.2} className="text-center mt-10">
+          <Link href="/chat">
+            <Button
+              size="lg"
+              className="text-base px-8 py-6 rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
             >
-              GitHub
-            </a>
+              Try It Yourself
+              <ArrowRight className="size-5 ml-1" />
+            </Button>
+          </Link>
+        </FadeIn>
+      </div>
+    </section>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="border-t border-border/60 bg-card/40 backdrop-blur-sm">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+        <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-6">
+          <div className="flex items-center gap-3 justify-self-center sm:justify-self-start">
+            <div className="p-1.5 rounded-lg bg-linear-to-br from-primary/20 to-primary/5 border border-primary/20">
+              <Bot className="size-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold">Toolix AI</p>
+              <p className="text-xs text-muted-foreground">
+                Tool-Enabled AI Agent
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-3 text-sm text-gray-300">
-            <span className="px-2 py-1 bg-white/4 rounded">Next.js</span>
-            <span className="px-2 py-1 bg-white/4 rounded">Vercel AI</span>
-            <span className="px-2 py-1 bg-white/4 rounded">LangGraph</span>
-            <span className="px-2 py-1 bg-white/4 rounded">shadcn UI</span>
+
+          <p className="text-sm text-center text-muted-foreground justify-self-center">
+            Built with ❤️ by{" "}
+            <Link
+              href="https://khilesh.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              Khilesh Jawale
+            </Link>
+          </p>
+
+          <div className="flex items-center gap-4 justify-self-center sm:justify-self-end">
+            <Link
+              href="https://github.com/khilesh-jawale"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Github className="size-5" />
+            </Link>
           </div>
         </div>
-      </footer>
+      </div>
+    </footer>
+  );
+}
+
+export default function LandingPage() {
+  return (
+    <main className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      <HeroSection />
+      <FeaturesSection />
+      <DifferentiatorsSection />
+      <TechStackSection />
+      <DemoPreviewSection />
+      <Footer />
     </main>
   );
 }
