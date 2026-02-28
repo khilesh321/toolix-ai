@@ -331,7 +331,7 @@ export function ChatMessage({
         </div>
 
         {message.role === "user" && !isEditing && (
-          <div className="flex justify-end mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex justify-end mt-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
             <button
               onClick={handleStartEdit}
               className="p-1.5 rounded-md hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
@@ -344,7 +344,7 @@ export function ChatMessage({
         )}
 
         {message.role === "assistant" && !isStreaming && (
-          <div className="flex justify-start mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex justify-start mt-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
             <button
               onClick={() => onRetry?.(message.id)}
               className="p-1.5 rounded-md hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
