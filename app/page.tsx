@@ -159,61 +159,12 @@ function CyclingText() {
   );
 }
 
-function seededRandom(seed: number) {
-  const x = Math.sin(seed + 1) * 10000;
-  return x - Math.floor(x);
-}
-
-function ParticleField() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return (
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" />
-    );
-  }
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {Array.from({ length: 30 }).map((_, i) => {
-        const r = (offset: number) => seededRandom(i * 7 + offset);
-        return (
-          <motion.div
-            key={i}
-            className="absolute size-1 rounded-full bg-primary/20"
-            initial={{
-              x: `${r(0) * 100}%`,
-              y: `${r(1) * 100}%`,
-              scale: r(2) * 0.5 + 0.5,
-            }}
-            animate={{
-              y: [`${r(3) * 100}%`, `${r(4) * 100}%`, `${r(5) * 100}%`],
-              x: [`${r(6) * 100}%`, `${r(7) * 100}%`, `${r(8) * 100}%`],
-              opacity: [0, 0.6, 0],
-            }}
-            transition={{
-              duration: r(9) * 15 + 10,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
 function HeroSection() {
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.65_0.25_250/0.08)_0%,transparent_70%)]" />
       <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-[radial-gradient(ellipse,oklch(0.65_0.25_250/0.06),transparent_70%)] blur-3xl" />
       <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-[radial-gradient(ellipse,oklch(0.65_0.15_300/0.04),transparent_70%)] blur-3xl" />
-      <ParticleField />
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
