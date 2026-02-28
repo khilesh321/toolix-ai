@@ -66,8 +66,8 @@ export default function Chat() {
   };
 
   return (
-    <div className="h-screen bg-linear-to-br from-background via-background to-muted/50 flex flex-col">
-      <Card className="flex-1 flex flex-col rounded-none border-0 border-b shadow-none">
+    <div className="h-screen bg-[#0a0a0a] flex flex-col">
+      <Card className="flex-1 flex flex-col rounded-none border-0 border-b border-white/[0.08] shadow-none bg-transparent">
         <ChatHeader mode={mode} onModeChange={setMode} />
 
         <ScrollArea

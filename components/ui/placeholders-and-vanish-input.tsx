@@ -217,8 +217,8 @@ export function PlaceholdersAndVanishInput({
   return (
     <form
       className={cn(
-        "w-full relative max-w-xl mx-auto bg-white dark:bg-zinc-800 min-h-12 rounded-lg overflow-hidden shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),_0px_1px_0px_0px_rgba(25,28,33,0.02),_0px_0px_0px_1px_rgba(25,28,33,0.08)] transition duration-200",
-        value && "bg-gray-50",
+        "w-full relative max-w-xl mx-auto bg-white dark:bg-white/[0.06] min-h-12 rounded-lg overflow-hidden shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),_0px_1px_0px_0px_rgba(25,28,33,0.02),_0px_0px_0px_1px_rgba(25,28,33,0.08)] dark:shadow-none dark:border dark:border-white/[0.1] transition duration-200",
+        value && "bg-gray-50 dark:bg-white/[0.08]",
       )}
       onSubmit={handleSubmit}
     >
@@ -255,7 +255,7 @@ export function PlaceholdersAndVanishInput({
             onStop?.();
           }
         }}
-        className="absolute right-2 top-1/2 z-50 -translate-y-1/2 h-8 w-8 rounded-lg disabled:bg-gray-100 bg-black dark:bg-zinc-900 dark:disabled:bg-zinc-800 transition duration-200 flex items-center justify-center"
+        className="absolute right-2 top-1/2 z-50 -translate-y-1/2 h-8 w-8 rounded-lg disabled:bg-gray-100 bg-black dark:bg-white/[0.1] dark:disabled:bg-white/[0.05] transition duration-200 flex items-center justify-center"
       >
         {isLoading ? (
           <svg

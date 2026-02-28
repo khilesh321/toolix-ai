@@ -52,7 +52,7 @@ export function ChatInput({
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border/50 p-4 z-10">
+    <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/95 backdrop-blur-sm border-t border-white/[0.08] p-4 z-10">
       <div className="w-full max-w-xl mx-auto relative">
         <div
           ref={dropdownRef}

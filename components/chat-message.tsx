@@ -104,10 +104,10 @@ export function ChatMessage({
     >
       {message.role !== "user" && (
         <Avatar
-          className="size-8 border border-border/50 shadow-sm hidden md:block"
+          className="size-8 border border-white/[0.12] shadow-sm hidden md:block"
           aria-label="Assistant avatar"
         >
-          <AvatarFallback className="bg-linear-to-br from-primary/20 to-primary/5">
+          <AvatarFallback className="bg-linear-to-br from-primary/20 to-[#0a0a0a]">
             <Bot className="size-4 text-primary" />
           </AvatarFallback>
         </Avatar>
@@ -122,7 +122,7 @@ export function ChatMessage({
               ? "w-full max-w-4xl bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-3 shadow-md"
               : message.role === "user"
                 ? "w-full max-w-sm sm:max-w-md md:max-w-2xl bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-3 shadow-md"
-                : "w-full max-w-sm sm:max-w-md md:max-w-2xl bg-muted/50 border border-border/50 rounded-2xl rounded-bl-md px-4 py-3"
+                : "w-full max-w-sm sm:max-w-md md:max-w-2xl bg-white/[0.06] border border-white/[0.12] rounded-2xl rounded-bl-md px-4 py-3"
           }`}
         >
           {isEditing && message.role === "user" ? (
@@ -359,10 +359,10 @@ export function ChatMessage({
 
       {message.role === "user" && (
         <Avatar
-          className="size-8 border border-border/50 shadow-sm hidden md:block"
+          className="size-8 border border-white/[0.12] shadow-sm hidden md:block"
           aria-label="User avatar"
         >
-          <AvatarFallback className="bg-linear-to-br from-foreground/10 to-foreground/5">
+          <AvatarFallback className="bg-linear-to-br from-foreground/10 to-[#0a0a0a]">
             <User className="size-4 text-foreground/70" />
           </AvatarFallback>
         </Avatar>

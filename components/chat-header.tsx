@@ -8,7 +8,7 @@ interface ChatHeaderProps {
 
 export function ChatHeader({ mode, onModeChange }: ChatHeaderProps) {
   return (
-    <CardHeader className="border-b bg-card/80 backdrop-blur-sm shrink-0">
+    <CardHeader className="border-b border-white/[0.08] bg-[#0a0a0a] backdrop-blur-sm shrink-0">
       <CardTitle className="flex items-center gap-3">
         <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-linear-to-br from-primary/20 to-primary/5 border border-primary/20">
           <Bot className="size-4 sm:size-5 text-primary" />
