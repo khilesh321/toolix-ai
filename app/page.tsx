@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Hls from "hls.js";
 import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import {
   ArrowRight,
@@ -159,12 +160,61 @@ function CyclingText() {
   );
 }
 
+function HeroBackgroundVideo() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const src =
+      "https://stream.mux.com/s8pMcOvMQXc4GD6AX4e1o01xFogFxipmuKltNfSYza0200.m3u8";
+
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(src);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play().catch(() => {});
+      });
+      return () => hls.destroy();
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = src;
+      video.addEventListener("loadedmetadata", () => {
+        video.play().catch(() => {});
+      });
+    }
+  }, []);
+
+  return (
+    <video
+      ref={videoRef}
+      autoPlay
+      loop
+      muted
+      playsInline
+      className="absolute inset-0 w-full h-full object-cover scale-[1.2] origin-left pointer-events-none"
+    />
+  );
+}
+
 function HeroSection() {
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.65_0.25_250/0.08)_0%,transparent_70%)]" />
+      {/* Background Video */}
+      <HeroBackgroundVideo />
+
+      {/* Bottom fade gradient */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-40 z-10 pointer-events-none"
+        style={{
+          background: "linear-gradient(to top, var(--background), transparent)",
+        }}
+      />
+
+      {/* <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.65_0.25_250/0.08)_0%,transparent_70%)]" />
       <div className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 bg-[radial-gradient(ellipse,oklch(0.65_0.25_250/0.06),transparent_70%)] blur-3xl" />
-      <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-[radial-gradient(ellipse,oklch(0.65_0.15_300/0.04),transparent_70%)] blur-3xl" />
+      <div className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-[radial-gradient(ellipse,oklch(0.65_0.15_300/0.04),transparent_70%)] blur-3xl" /> */}
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -201,18 +251,18 @@ function HeroSection() {
           transition={{ delay: 0.4, duration: 0.6 }}
           className="flex items-center gap-2 mb-6"
         >
-          <Sparkles className="size-4 text-primary/60" />
-          <span className="text-lg sm:text-xl text-muted-foreground font-medium">
+          <Sparkles className="size-4 text-white/70" />
+          <span className="text-lg sm:text-xl text-white/90 font-medium">
             Tool-Enabled AI Agent
           </span>
-          <Sparkles className="size-4 text-primary/60" />
+          <Sparkles className="size-4 text-white/70" />
         </motion.div>
 
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.6 }}
-          className="text-lg sm:text-xl md:text-2xl text-muted-foreground/80 max-w-2xl mb-4"
+          className="text-lg sm:text-xl md:text-2xl text-white/80 max-w-2xl mb-4"
         >
           Your intelligent assistant powered by <CyclingText />
         </motion.p>
@@ -221,7 +271,7 @@ function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.75, duration: 0.6 }}
-          className="text-sm sm:text-base text-muted-foreground/60 max-w-xl mb-10"
+          className="text-sm sm:text-base text-white/70 max-w-xl mb-10"
         >
           Built with LangGraph agents, Thesys C1 generative UI, and Vercel AI
           SDK for real-time streaming — going beyond what traditional chatbots
