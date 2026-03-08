@@ -109,6 +109,7 @@ const TECH_STACK = [
   { name: "shadcn/ui", icon: Layers },
   { name: "Tailwind CSS", icon: Code },
   { name: "Framer Motion", icon: Zap },
+  { name: "GSAP", icon: Zap },
 ];
 
 function FadeIn({
