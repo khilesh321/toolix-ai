@@ -575,13 +575,12 @@ function DifferentiatorsSection() {
                 weather widgets, image galleries, data visualizations, and more
                 that render right in the chat.
               </p>
-              <div className="rounded-xl border-2 border-dashed border-border/40 bg-muted/10 aspect-video flex items-center justify-center">
-                <div className="text-center">
-                  <ImageIcon className="size-8 text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground/40">
-                    Screenshot coming soon
-                  </p>
-                </div>
+              <div className="rounded-xl overflow-hidden border border-border/40">
+                <img
+                  src="/generative-ui.gif"
+                  alt="Generative UI Demo"
+                  className="w-full"
+                />
               </div>
             </motion.div>
           </FadeIn>
@@ -603,13 +602,16 @@ function DifferentiatorsSection() {
                 fetches the full transcript and analyzes it — no need to watch
                 the entire video to get the key insights.
               </p>
-              <div className="rounded-xl border-2 border-dashed border-border/40 bg-muted/10 aspect-video flex items-center justify-center">
-                <div className="text-center">
-                  <Video className="size-8 text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground/40">
-                    Screenshot coming soon
-                  </p>
-                </div>
+              <div className="rounded-xl overflow-hidden border border-border/40">
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full"
+                  // style={{ filter: "blur(0.35px) contrast(0.9)" }}
+                  src="/youtube-summariser-demo.mp4"
+                />
               </div>
             </motion.div>
           </FadeIn>
@@ -702,18 +704,14 @@ function DemoPreviewSection() {
               </div>
             </div>
 
-            <div className="aspect-video bg-muted/10 flex items-center justify-center relative">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,oklch(0.65_0.25_250/0.03)_0%,transparent_60%)]" />
-              <div className="text-center relative z-10">
-                <Bot className="size-12 text-muted-foreground/20 mx-auto mb-3" />
-                <p className="text-muted-foreground/40 text-sm">
-                  Demo preview coming soon
-                </p>
-                <p className="text-muted-foreground/30 text-xs mt-1">
-                  Chat interface screenshot will go here
-                </p>
-              </div>
-            </div>
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full"
+              src="/ToolixPromo.mp4"
+            />
           </motion.div>
         </FadeIn>
 
