@@ -6,6 +6,7 @@ import Hls from "hls.js";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { ReactLenis } from "lenis/react";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -967,10 +968,12 @@ export default function LandingPage() {
   return (
     <main className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <Navbar />
-      <HeroSection />
-      <FeaturesSection />
-      <DifferentiatorsSection />
-      <TechStackSection />
+      <ReactLenis root>
+        <HeroSection />
+        <FeaturesSection />
+        <DifferentiatorsSection />
+        <TechStackSection />
+      </ReactLenis>
       <DemoPreviewSection />
       <Footer />
     </main>
