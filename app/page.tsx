@@ -601,6 +601,8 @@ function FeaturesSection() {
       ref={containerRef}
       className="relative py-24 sm:py-32 px-4 sm:px-6 min-h-screen flex flex-col justify-center overflow-hidden"
     >
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background to-transparent z-10 pointer-events-none" />
+
       {/* Background Canvas */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <canvas
@@ -609,6 +611,8 @@ function FeaturesSection() {
         />
         <div className="absolute inset-0 bg-background/40" />
       </div>
+
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none" />
 
       <div className="max-w-6xl mx-auto relative z-10 w-full">
         <FadeIn className="text-center mb-16">
@@ -660,7 +664,7 @@ function FeaturesSection() {
 function DifferentiatorsSection() {
   return (
     <section className="relative py-24 sm:py-32 px-4 sm:px-6">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,oklch(0.65_0.25_250/0.04)_0%,transparent_50%)]" />
+      <div className="absolute inset-0 top-50 bg-[radial-gradient(ellipse_at_top,oklch(0.65_0.25_250/0.04)_0%,transparent_50%)]" />
       <div className="max-w-6xl mx-auto relative z-10">
         <FadeIn className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border/60 bg-card/80 text-sm text-muted-foreground mb-6">
