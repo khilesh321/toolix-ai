@@ -3,6 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Hls from "hls.js";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import {
   ArrowRight,
@@ -488,18 +495,131 @@ function HeroSection() {
 }
 
 function FeaturesSection() {
+  const containerRef = useRef<HTMLElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const frameCount = 75;
+
+  useGSAP(
+    () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const context = canvas.getContext("2d");
+      if (!context) return;
+
+      // Preload images
+      const images: HTMLImageElement[] = [];
+      const sequence = { frame: 0 };
+
+      for (let i = 0; i < frameCount; i++) {
+        const img = new Image();
+        const frameNum = String(i).padStart(2, "0");
+        img.src = `/sequence/frame_${frameNum}_delay-0.066s.webp`;
+        images.push(img);
+      }
+
+      const render = () => {
+        const img = images[sequence.frame];
+        if (img && img.complete) {
+          context.clearRect(0, 0, canvas.width, canvas.height);
+
+          // Calculate the ratio to cover the canvas
+          const hRatio = canvas.width / img.width;
+          const vRatio = canvas.height / img.height;
+          const ratio = Math.max(hRatio, vRatio);
+
+          const centerShift_x = (canvas.width - img.width * ratio) / 2;
+          const centerShift_y = (canvas.height - img.height * ratio) / 2;
+
+          context.drawImage(
+            img,
+            0,
+            0,
+            img.width,
+            img.height,
+            centerShift_x,
+            centerShift_y,
+            img.width * ratio,
+            img.height * ratio,
+          );
+        }
+      };
+
+      images[0].onload = render;
+
+      const resizeCanvas = () => {
+        if (containerRef.current && canvas) {
+          // Use container dimensions or window dimensions
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+          render();
+        }
+      };
+
+      resizeCanvas();
+      window.addEventListener("resize", resizeCanvas);
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top+=50 top",
+          end: "+=2000",
+          scrub: 0.5,
+          pin: true,
+          // markers: true,
+        },
+      });
+
+      tl.to(
+        sequence,
+        {
+          frame: frameCount - 1,
+          snap: "frame",
+          ease: "none",
+          duration: 1,
+          onUpdate: render,
+        },
+        0,
+      );
+
+      tl.fromTo(
+        ".feature-card",
+        { opacity: 0, y: 50 },
+        { opacity: 1, y: 0, stagger: 0.1, duration: 0.5, ease: "power2.out" },
+        0,
+      );
+
+      return () => {
+        window.removeEventListener("resize", resizeCanvas);
+      };
+    },
+    { scope: containerRef },
+  );
+
   return (
-    <section id="capabilities" className="relative py-24 sm:py-32 px-4 sm:px-6">
-      <div className="max-w-6xl mx-auto">
+    <section
+      id="capabilities"
+      ref={containerRef}
+      className="relative py-24 sm:py-32 px-4 sm:px-6 min-h-screen flex flex-col justify-center overflow-hidden"
+    >
+      {/* Background Canvas */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <canvas
+          ref={canvasRef}
+          className="w-full h-full object-cover opacity-60 mix-blend-screen"
+        />
+        <div className="absolute inset-0 bg-background/40" />
+      </div>
+
+      <div className="max-w-6xl mx-auto relative z-10 w-full">
         <FadeIn className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border/60 bg-card/80 text-sm text-muted-foreground mb-6">
             <Sparkles className="size-4 text-primary" />
             Capabilities
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4 text-shadow-sm">
             What Can Toolix Do?
           </h2>
-          <p className="text-muted-foreground/80 text-lg max-w-2xl mx-auto">
+          <p className="text-foreground/90 text-lg max-w-2xl mx-auto drop-shadow-md">
             Six powerful tools that work together to handle complex tasks — from
             searching the web to generating images.
           </p>
@@ -507,11 +627,11 @@ function FeaturesSection() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {FEATURES.map((feature, i) => (
-            <FadeIn key={feature.title} delay={i * 0.08}>
+            <div key={feature.title} className="feature-card opacity-0">
               <motion.div
                 whileHover={{ y: -4, scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="group relative rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-6 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-colors h-full"
+                className="group relative rounded-xl border border-border/60 bg-card/80 backdrop-blur-md p-6 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 transition-colors h-full"
               >
                 <div
                   className={cn(
@@ -525,11 +645,11 @@ function FeaturesSection() {
                 <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
                   {feature.title}
                 </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className="text-sm text-foreground/80 leading-relaxed">
                   {feature.description}
                 </p>
               </motion.div>
-            </FadeIn>
+            </div>
           ))}
         </div>
       </div>
