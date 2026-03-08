@@ -561,12 +561,12 @@ function DifferentiatorsSection() {
             <motion.div
               whileHover={{ y: -4 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="group rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm p-8 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all h-full"
+              className="group rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm p-8 hover:border-purple-400/30 hover:shadow-xl hover:shadow-primary/5 transition-all h-full"
             >
               <div className="p-3 rounded-xl bg-linear-to-br from-purple-500/20 to-purple-500/5 border border-purple-500/20 w-fit mb-5">
                 <Layers className="size-6 text-purple-400" />
               </div>
-              <h3 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors">
+              <h3 className="text-2xl font-bold mb-3 group-hover:text-purple-400 transition-colors">
                 Generative UI
               </h3>
               <p className="text-muted-foreground leading-relaxed mb-6">
@@ -621,10 +621,71 @@ function DifferentiatorsSection() {
   );
 }
 
+function TechStackVideo() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const src =
+      "https://stream.mux.com/9JXDljEVWYwWu01PUkAemafDugK89o01BR6zqJ3aS9u00A.m3u8";
+    const fallbackSrc = "/_videos/v1/f0c78f536d5f21a047fb7792723a36f9d647daa1";
+
+    let hls: Hls | null = null;
+
+    if (Hls.isSupported()) {
+      hls = new Hls();
+      hls.loadSource(src);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play().catch(() => {});
+      });
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        if (data.fatal) {
+          hls?.destroy();
+          video.src = fallbackSrc;
+          video.play().catch(() => {});
+        }
+      });
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = src;
+      video.addEventListener("loadedmetadata", () => {
+        video.play().catch(() => {});
+      });
+      video.addEventListener("error", () => {
+        video.src = fallbackSrc;
+        video.play().catch(() => {});
+      });
+    } else {
+      video.src = fallbackSrc;
+      video.play().catch(() => {});
+    }
+
+    return () => {
+      if (hls) hls.destroy();
+    };
+  }, []);
+
+  return (
+    <div className="absolute inset-0 z-0 w-full h-full overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-background/10 to-background z-10" />
+      <video
+        ref={videoRef}
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute md:top-25 inset-0 w-full h-full object-cover mix-blend-screen opacity-50"
+      />
+    </div>
+  );
+}
+
 function TechStackSection() {
   return (
     <section id="tech-stack" className="relative py-24 sm:py-32 px-4 sm:px-6">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto relative z-20">
         <FadeIn className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border/60 bg-card/80 text-sm text-muted-foreground mb-6">
             <Code className="size-4 text-primary" />
@@ -655,6 +716,8 @@ function TechStackSection() {
           ))}
         </div>
       </div>
+
+      <TechStackVideo />
     </section>
   );
 }
