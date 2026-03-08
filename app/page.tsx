@@ -13,9 +13,11 @@ import {
   Globe,
   Image as ImageIcon,
   Layers,
+  Menu,
   Search,
   Sparkles,
   Video,
+  X,
   Zap,
   Code,
   MessageSquare,
@@ -157,6 +159,164 @@ function CyclingText() {
         </motion.span>
       </AnimatePresence>
     </span>
+  );
+}
+
+const NAV_LINKS = [
+  { label: "Capabilities", href: "#capabilities" },
+  { label: "Tech Stack", href: "#tech-stack" },
+  { label: "Preview", href: "#preview" },
+];
+
+function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.6, ease: [0.21, 0.47, 0.32, 0.98] }}
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        scrolled || mobileOpen
+          ? "bg-background/80 backdrop-blur-xl border-b border-border/60 shadow-lg shadow-black/5"
+          : "bg-transparent",
+      )}
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="p-1.5 rounded-lg bg-linear-to-br from-primary/20 to-primary/5 border border-primary/20 group-hover:border-primary/40 transition-colors">
+            <Bot className="size-4 text-primary" />
+          </div>
+          <span className="text-sm font-bold tracking-tight">Toolix AI</span>
+        </Link>
+
+        {/* Desktop links */}
+        <div className="hidden sm:flex items-center gap-1">
+          {NAV_LINKS.map((item) => (
+            <a
+              key={item.label}
+              href={item.href}
+              className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted/50"
+            >
+              {item.label}
+            </a>
+          ))}
+          <Link
+            href="https://github.com/khilesh321/toolix-ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted/50"
+          >
+            <Github className="size-4" />
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Link href="/chat" className="hidden sm:block">
+            <Button
+              size="sm"
+              className="rounded-lg shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all"
+            >
+              Try Toolix AI
+              <ArrowRight className="size-3.5 ml-1" />
+            </Button>
+          </Link>
+
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setMobileOpen((prev) => !prev)}
+            className="sm:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors relative w-9 h-9 flex items-center justify-center"
+            aria-label="Toggle menu"
+          >
+            <div className="w-5 h-4 relative flex flex-col justify-between">
+              <span
+                className={cn(
+                  "block h-[1.5px] w-full bg-current rounded-full transition-all duration-300 origin-center",
+                  mobileOpen && "translate-y-[7px] rotate-45",
+                )}
+              />
+              <span
+                className={cn(
+                  "block h-[1.5px] w-full bg-current rounded-full transition-all duration-300",
+                  mobileOpen && "opacity-0 scale-x-0",
+                )}
+              />
+              <span
+                className={cn(
+                  "block h-[1.5px] w-full bg-current rounded-full transition-all duration-300 origin-center",
+                  mobileOpen && "-translate-y-[7px] -rotate-45",
+                )}
+              />
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="sm:hidden overflow-hidden border-t border-border/40 bg-background/95 backdrop-blur-xl"
+          >
+            <div className="px-4 py-4 flex flex-col gap-1">
+              {NAV_LINKS.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setMobileOpen(false);
+                    const el = document.querySelector(item.href);
+                    if (el) {
+                      setTimeout(
+                        () => el.scrollIntoView({ behavior: "smooth" }),
+                        100,
+                      );
+                    }
+                  }}
+                  className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted/50"
+                >
+                  {item.label}
+                </a>
+              ))}
+              <Link
+                href="https://github.com/khilesh321/toolix-ai"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileOpen(false)}
+                className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted/50 flex items-center gap-2"
+              >
+                <Github className="size-4" />
+                GitHub
+              </Link>
+              <div className="pt-2">
+                <Link href="/chat" onClick={() => setMobileOpen(false)}>
+                  <Button
+                    size="sm"
+                    className="w-full rounded-lg shadow-md shadow-primary/20"
+                  >
+                    Try Toolix AI
+                    <ArrowRight className="size-3.5 ml-1" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.nav>
   );
 }
 
@@ -329,7 +489,7 @@ function HeroSection() {
 
 function FeaturesSection() {
   return (
-    <section className="relative py-24 sm:py-32 px-4 sm:px-6">
+    <section id="capabilities" className="relative py-24 sm:py-32 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto">
         <FadeIn className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border/60 bg-card/80 text-sm text-muted-foreground mb-6">
@@ -461,7 +621,7 @@ function DifferentiatorsSection() {
 
 function TechStackSection() {
   return (
-    <section className="relative py-24 sm:py-32 px-4 sm:px-6">
+    <section id="tech-stack" className="relative py-24 sm:py-32 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto">
         <FadeIn className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border/60 bg-card/80 text-sm text-muted-foreground mb-6">
@@ -503,7 +663,7 @@ function DemoPreviewSection() {
   const scale = useTransform(scrollYProgress, [0.5, 0.75], [0.95, 1]);
 
   return (
-    <section className="relative py-24 sm:py-32 px-4 sm:px-6">
+    <section id="preview" className="relative py-24 sm:py-32 px-4 sm:px-6">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,oklch(0.65_0.25_250/0.04)_0%,transparent_50%)]" />
       <div className="max-w-4xl mx-auto relative z-10">
         <FadeIn className="text-center mb-16">
@@ -621,6 +781,7 @@ function Footer() {
 export default function LandingPage() {
   return (
     <main className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      <Navbar />
       <HeroSection />
       <FeaturesSection />
       <DifferentiatorsSection />
