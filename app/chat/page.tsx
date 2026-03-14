@@ -15,54 +15,23 @@ export default function Chat() {
     useChat();
   const [input, setInput] = useState("");
   const viewportRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const isAutoScrollRef = useRef(true);
-  const isProgrammaticScrollRef = useRef(false);
   const isLoading = status === "streaming" || status === "submitted";
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [mode, setMode] = useState("General");
 
-  useEffect(() => {
-    if (isAutoScrollRef.current && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "auto", block: "end" });
-    }
-  }, [messages]);
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {};
 
-  const scrollToBottom = () => {
-    isAutoScrollRef.current = true;
-    messagesEndRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({
-        behavior: "auto",
-        block: "end",
-      });
-    }, 50);
-  };
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const target = e.currentTarget;
-    const isAtBottom =
-      target.scrollHeight - target.scrollTop <= target.clientHeight + 150;
-    if (isAtBottom) {
-      isAutoScrollRef.current = true;
-    }
-  };
-
-  const handleUserScrollInteraction = () => {
-    isAutoScrollRef.current = false;
-  };
+  const handleUserScrollInteraction = () => {};
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
     sendMessage({ text: input }, { body: { mode } });
     setInput("");
-    scrollToBottom();
   };
 
   const handleSuggestionClick = (message: string) => {
     sendMessage({ text: message });
-    scrollToBottom();
   };
 
   const handleStartEdit = (messageId: string) => {
@@ -87,13 +56,11 @@ export default function Chat() {
     setMessages(newMessages);
     setEditingMessageId(null);
     regenerate({ messageId });
-    scrollToBottom();
   };
 
   const handleRetry = (messageId: string) => {
     stop();
     regenerate({ messageId });
-    scrollToBottom();
   };
 
   return (
@@ -133,7 +100,6 @@ export default function Chat() {
               {isLoading && messages[messages.length - 1]?.role === "user" && (
                 <TypingIndicator />
               )}
-              <div ref={messagesEndRef} className="h-20" />
             </div>
           </ScrollArea>
         </div>
