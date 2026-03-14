@@ -76,7 +76,7 @@ export default function Chat() {
           <ScrollArea
             viewportRef={viewportRef}
             onScroll={handleScroll}
-            className="h-full w-full p-4 px-6 pb-10"
+            className="h-full w-full p-4 px-6 pb-20"
           >
             <div className="space-y-6 max-w-4xl mx-auto overflow-hidden">
               {messages.length === 0 && (
