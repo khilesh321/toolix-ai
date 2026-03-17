@@ -15,6 +15,7 @@
   "dependencies": {
     "@ai-sdk/langchain": "^2.0.25",
     "@ai-sdk/react": "^3.0.21",
+    "@clerk/nextjs": "^7.0.5",
     "@crayonai/react-core": "~0.7.6",
     "@crayonai/react-ui": "~0.9.9",
     "@google/generative-ai": "^0.24.1",

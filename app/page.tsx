@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth, useClerk } from "@clerk/nextjs";
 import Hls from "hls.js";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -177,7 +179,7 @@ const NAV_LINKS = [
   { label: "Preview", href: "#preview" },
 ];
 
-function Navbar() {
+function Navbar({ onTryToolixClick }: { onTryToolixClick: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -229,15 +231,14 @@ function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Link href="/chat" className="hidden sm:block">
-            <Button
-              size="sm"
-              className="rounded-lg shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all"
-            >
-              Try Toolix AI
-              <ArrowRight className="size-3.5 ml-1" />
-            </Button>
-          </Link>
+          <Button
+            size="sm"
+            onClick={onTryToolixClick}
+            className="hidden sm:inline-flex rounded-lg shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all"
+          >
+            Try Toolix AI
+            <ArrowRight className="size-3.5 ml-1" />
+          </Button>
 
           {/* Mobile hamburger */}
           <button
@@ -311,15 +312,17 @@ function Navbar() {
                 GitHub
               </Link>
               <div className="pt-2">
-                <Link href="/chat" onClick={() => setMobileOpen(false)}>
-                  <Button
-                    size="sm"
-                    className="w-full rounded-lg shadow-md shadow-primary/20"
-                  >
-                    Try Toolix AI
-                    <ArrowRight className="size-3.5 ml-1" />
-                  </Button>
-                </Link>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    onTryToolixClick();
+                  }}
+                  className="w-full rounded-lg shadow-md shadow-primary/20"
+                >
+                  Try Toolix AI
+                  <ArrowRight className="size-3.5 ml-1" />
+                </Button>
               </div>
             </div>
           </motion.div>
@@ -367,7 +370,7 @@ function HeroBackgroundVideo() {
   );
 }
 
-function HeroSection() {
+function HeroSection({ onTryToolixClick }: { onTryToolixClick: () => void }) {
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 overflow-hidden">
       {/* Background Video */}
@@ -453,15 +456,14 @@ function HeroSection() {
           transition={{ delay: 0.9, duration: 0.6 }}
           className="flex flex-col sm:flex-row items-center gap-4"
         >
-          <Link href="/chat">
-            <Button
-              size="lg"
-              className="text-base px-8 py-6 rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
-            >
-              Try Toolix AI
-              <ArrowRight className="size-5 ml-1" />
-            </Button>
-          </Link>
+          <Button
+            size="lg"
+            onClick={onTryToolixClick}
+            className="text-base px-8 py-6 rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
+          >
+            Try Toolix AI
+            <ArrowRight className="size-5 ml-1" />
+          </Button>
           <Link
             href="https://github.com/khilesh-jawale"
             target="_blank"
@@ -848,7 +850,11 @@ function TechStackSection() {
   );
 }
 
-function DemoPreviewSection() {
+function DemoPreviewSection({
+  onTryToolixClick,
+}: {
+  onTryToolixClick: () => void;
+}) {
   const { scrollYProgress } = useScroll();
   const rotateX = useTransform(scrollYProgress, [0.5, 0.75], [8, 0]);
   const scale = useTransform(scrollYProgress, [0.5, 0.75], [0.95, 1]);
@@ -905,15 +911,14 @@ function DemoPreviewSection() {
         </FadeIn>
 
         <FadeIn delay={0.2} className="text-center mt-10">
-          <Link href="/chat">
-            <Button
-              size="lg"
-              className="text-base px-8 py-6 rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
-            >
-              Try It Yourself
-              <ArrowRight className="size-5 ml-1" />
-            </Button>
-          </Link>
+          <Button
+            size="lg"
+            onClick={onTryToolixClick}
+            className="text-base px-8 py-6 rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
+          >
+            Try It Yourself
+            <ArrowRight className="size-5 ml-1" />
+          </Button>
         </FadeIn>
       </div>
     </section>
@@ -966,16 +971,29 @@ function Footer() {
 }
 
 export default function LandingPage() {
+  const router = useRouter();
+  const { isSignedIn } = useAuth();
+  const { openSignIn } = useClerk();
+
+  const handleTryToolixClick = () => {
+    if (isSignedIn) {
+      router.push("/chat");
+      return;
+    }
+
+    openSignIn();
+  };
+
   return (
     <main className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      <Navbar />
+      <Navbar onTryToolixClick={handleTryToolixClick} />
       <ReactLenis root>
-        <HeroSection />
+        <HeroSection onTryToolixClick={handleTryToolixClick} />
         <FeaturesSection />
         <DifferentiatorsSection />
         <TechStackSection />
       </ReactLenis>
-      <DemoPreviewSection />
+      <DemoPreviewSection onTryToolixClick={handleTryToolixClick} />
       <Footer />
     </main>
   );
