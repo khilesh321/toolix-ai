@@ -9,7 +9,6 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -56,7 +55,7 @@ export function ChatSidebar({
   }, [chats, query]);
 
   const list = (
-    <ScrollArea className="flex-1 p-2">
+    <div className="flex-1 min-h-0 overflow-y-auto p-2">
       <div className="space-y-1 pb-3">
         {filteredChats.length === 0 && (
           <div className="px-3 py-4 text-xs text-muted-foreground">
@@ -109,7 +108,7 @@ export function ChatSidebar({
           );
         })}
       </div>
-    </ScrollArea>
+    </div>
   );
 
   return (
@@ -120,7 +119,7 @@ export function ChatSidebar({
           collapsed ? "w-12" : "w-72",
         )}
       >
-        <div className="flex h-full w-full flex-col">
+        <div className="flex h-full w-full min-h-0 flex-col">
           <div className="p-3 border-b border-white/8 space-y-3">
             <div
               className={cn("flex items-center gap-2", collapsed && "flex-col")}
@@ -180,7 +179,7 @@ export function ChatSidebar({
         <div className="absolute inset-0 bg-black/50" onClick={onMobileClose} />
         <aside
           className={cn(
-            "absolute left-0 top-0 h-full w-72 border-r border-white/8 bg-[#060606] transition-transform duration-200",
+            "absolute left-0 top-0 h-full w-72 border-r border-white/8 bg-[#060606] transition-transform duration-200 flex min-h-0 flex-col",
             mobileOpen ? "translate-x-0" : "-translate-x-full",
           )}
         >

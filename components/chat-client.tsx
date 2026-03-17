@@ -2,7 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import type { UIMessage } from "ai";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { ChatHeader } from "@/components/chat-header";
 import { EmptyState } from "@/components/empty-state";
@@ -31,7 +31,6 @@ export default function ChatClient({
     });
 
   const [input, setInput] = useState("");
-  const viewportRef = useRef<HTMLDivElement>(null);
   const isLoading = status === "streaming" || status === "submitted";
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [mode, setMode] = useState("General");
@@ -48,8 +47,6 @@ export default function ChatClient({
   useEffect(() => {
     window.localStorage.setItem(sidebarStorageKey, String(sidebarCollapsed));
   }, [sidebarCollapsed]);
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {};
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,7 +89,7 @@ export default function ChatClient({
   };
 
   return (
-    <div className="h-screen bg-[#0a0a0a] flex overflow-hidden">
+    <div className="h-screen bg-[#0a0a0a] flex overflow-hidden min-h-0">
       <ChatSidebar
         chats={chatHistory}
         activeChatId={id}
@@ -102,20 +99,16 @@ export default function ChatClient({
         onMobileClose={() => setMobileSidebarOpen(false)}
       />
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <Card className="flex-1 flex flex-col rounded-none border-0 border-b border-white/8 shadow-none bg-transparent">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0">
+        <Card className="flex-1 flex flex-col min-h-0 gap-0 py-0 rounded-none border-0 border-b border-white/8 shadow-none bg-transparent">
           <ChatHeader
             mode={mode}
             onModeChange={setMode}
             onMobileMenuClick={() => setMobileSidebarOpen(true)}
           />
 
-          <div className="flex-1 overflow-hidden">
-            <div
-              ref={viewportRef}
-              onScroll={handleScroll}
-              className="h-full w-full overflow-y-auto p-4 px-6 pb-20"
-            >
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <div className="h-full w-full overflow-y-scroll p-4 px-6 pb-20">
               <div className="space-y-6 max-w-4xl mx-auto overflow-hidden">
                 {messages.length === 0 && (
                   <EmptyState onSuggestionClick={handleSuggestionClick} />

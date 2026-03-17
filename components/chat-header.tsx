@@ -1,5 +1,4 @@
 import { Bot, Menu, Sparkles } from "lucide-react";
-import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 interface ChatHeaderProps {
@@ -14,8 +13,8 @@ export function ChatHeader({
   onMobileMenuClick,
 }: ChatHeaderProps) {
   return (
-    <CardHeader className="border-b border-white/8 bg-[#0a0a0a] backdrop-blur-sm shrink-0">
-      <CardTitle className="flex items-center gap-3">
+    <div className="border-b border-white/8 bg-[#0a0a0a] backdrop-blur-sm shrink-0 px-2 md:px-4 py-1">
+      <div className="flex items-center gap-3">
         <Button
           type="button"
           size="icon-sm"
@@ -36,7 +35,7 @@ export function ChatHeader({
             <Sparkles className="size-2.5 sm:size-3" /> Tool-Enabled AI Agent
           </span>
         </div>
-      </CardTitle>
-    </CardHeader>
+      </div>
+    </div>
   );
 }
