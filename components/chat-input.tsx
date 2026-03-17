@@ -1,6 +1,7 @@
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 import { Sparkles, MessageSquare } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 interface ChatInputProps {
   onChange: (value: string) => void;
@@ -9,6 +10,7 @@ interface ChatInputProps {
   onStop?: () => void;
   mode: string;
   onModeChange: (mode: string) => void;
+  className?: string;
 }
 
 export function ChatInput({
@@ -18,6 +20,7 @@ export function ChatInput({
   onStop,
   mode,
   onModeChange,
+  className,
 }: ChatInputProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -52,7 +55,12 @@ export function ChatInput({
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a0a]/95 backdrop-blur-sm border-t border-white/[0.08] p-4 z-10">
+    <div
+      className={cn(
+        "fixed bottom-0 right-0 bg-[#0a0a0a]/95 backdrop-blur-sm border-t border-white/8 p-4 z-10",
+        className,
+      )}
+    >
       <div className="w-full max-w-xl mx-auto relative">
         <div
           ref={dropdownRef}
