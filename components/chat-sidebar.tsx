@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
-  Menu,
   MessageSquarePlus,
   Search,
   X,
@@ -33,7 +32,6 @@ export function ChatSidebar({
   collapsed,
   onToggleCollapsed,
   mobileOpen,
-  onMobileOpen,
   onMobileClose,
 }: {
   chats: ChatHistoryItem[];
@@ -41,10 +39,14 @@ export function ChatSidebar({
   collapsed: boolean;
   onToggleCollapsed: () => void;
   mobileOpen: boolean;
-  onMobileOpen: () => void;
   onMobileClose: () => void;
 }) {
   const [query, setQuery] = useState("");
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   const filteredChats = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -92,7 +94,7 @@ export function ChatSidebar({
                     collapsed && "md:hidden",
                   )}
                 >
-                  {formatUpdatedAt(chat.updatedAt)}
+                  {hydrated ? formatUpdatedAt(chat.updatedAt) : ""}
                 </span>
                 <span
                   className={cn(
@@ -112,30 +114,23 @@ export function ChatSidebar({
 
   return (
     <>
-      <Button
-        type="button"
-        size="icon-sm"
-        variant="secondary"
-        className="fixed top-3 left-3 z-30 md:hidden"
-        onClick={onMobileOpen}
-      >
-        <Menu className="size-4" />
-      </Button>
-
       <aside
         className={cn(
           "hidden md:flex shrink-0 border-r border-white/8 bg-[#060606] transition-all duration-200",
-          collapsed ? "w-16" : "w-72",
+          collapsed ? "w-12" : "w-72",
         )}
       >
         <div className="flex h-full w-full flex-col">
           <div className="p-3 border-b border-white/8 space-y-3">
-            <div className="flex items-center gap-2">
+            <div
+              className={cn("flex items-center gap-2", collapsed && "flex-col")}
+            >
               <Button
                 asChild
+                variant={"ghost"}
                 className={cn(
                   "flex-1 justify-start gap-2 min-w-0",
-                  collapsed && "px-0 justify-center",
+                  collapsed && "w-full px-0 justify-center",
                 )}
               >
                 <Link href="/chat" title="New Chat">
@@ -170,7 +165,7 @@ export function ChatSidebar({
             </div>
           </div>
 
-          {list}
+          {!collapsed && list}
         </div>
       </aside>
 

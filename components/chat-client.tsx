@@ -4,7 +4,6 @@ import { useChat } from "@ai-sdk/react";
 import type { UIMessage } from "ai";
 import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatHeader } from "@/components/chat-header";
 import { EmptyState } from "@/components/empty-state";
 import { ChatMessage } from "@/components/chat-message";
@@ -51,8 +50,6 @@ export default function ChatClient({
   }, [sidebarCollapsed]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {};
-
-  const handleUserScrollInteraction = () => {};
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,23 +99,22 @@ export default function ChatClient({
         collapsed={sidebarCollapsed}
         onToggleCollapsed={() => setSidebarCollapsed((prev) => !prev)}
         mobileOpen={mobileSidebarOpen}
-        onMobileOpen={() => setMobileSidebarOpen(true)}
         onMobileClose={() => setMobileSidebarOpen(false)}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
         <Card className="flex-1 flex flex-col rounded-none border-0 border-b border-white/8 shadow-none bg-transparent">
-          <ChatHeader mode={mode} onModeChange={setMode} />
+          <ChatHeader
+            mode={mode}
+            onModeChange={setMode}
+            onMobileMenuClick={() => setMobileSidebarOpen(true)}
+          />
 
-          <div
-            className="flex-1 overflow-hidden"
-            onWheelCapture={handleUserScrollInteraction}
-            onTouchMoveCapture={handleUserScrollInteraction}
-          >
-            <ScrollArea
-              viewportRef={viewportRef}
+          <div className="flex-1 overflow-hidden">
+            <div
+              ref={viewportRef}
               onScroll={handleScroll}
-              className="h-full w-full p-4 px-6 pb-20"
+              className="h-full w-full overflow-y-auto p-4 px-6 pb-20"
             >
               <div className="space-y-6 max-w-4xl mx-auto overflow-hidden">
                 {messages.length === 0 && (
@@ -144,7 +140,7 @@ export default function ChatClient({
                     <TypingIndicator />
                   )}
               </div>
-            </ScrollArea>
+            </div>
           </div>
         </Card>
 
@@ -157,7 +153,7 @@ export default function ChatClient({
           onModeChange={setMode}
           className={cn(
             "left-0",
-            sidebarCollapsed ? "md:left-16" : "md:left-72",
+            sidebarCollapsed ? "md:left-18" : "md:left-72",
           )}
         />
       </div>
