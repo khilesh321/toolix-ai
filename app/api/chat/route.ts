@@ -5,11 +5,18 @@ import {
   UIMessage,
 } from "ai";
 import { buildGraph } from "@/lib/graph";
-import { loadChat, saveChat } from "@/lib/chat-store";
+import { auth } from "@clerk/nextjs/server";
+import { chatExists, loadChat, saveChat } from "@/lib/chat-store";
 
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return Response.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   const body = await req.json();
   const id = body.id ?? body.chatId;
 
@@ -20,6 +27,12 @@ export async function POST(req: Request) {
     );
   }
 
+  const ownsChat = await chatExists(userId, id);
+
+  if (!ownsChat) {
+    return Response.json({ error: "Chat not found." }, { status: 404 });
+  }
+
   const mode = typeof body.mode === "string" ? body.mode : undefined;
 
   let messages: UIMessage[] = [];
@@ -27,10 +40,10 @@ export async function POST(req: Request) {
   if (Array.isArray(body.messages)) {
     messages = body.messages as UIMessage[];
   } else if (body.message) {
-    const previousMessages = await loadChat(id);
+    const previousMessages = await loadChat(userId, id);
     messages = [...previousMessages, body.message as UIMessage];
   } else {
-    messages = await loadChat(id);
+    messages = await loadChat(userId, id);
   }
 
   if (messages.length === 0) {
@@ -63,7 +76,7 @@ export async function POST(req: Request) {
           ? [...messages, assistantMessage]
           : messages;
 
-        await saveChat({ chatId: id, messages: nextMessages });
+        await saveChat({ userId, chatId: id, messages: nextMessages });
       },
     }),
   });

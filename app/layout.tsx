@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ClerkProvider, Show, UserButton } from "@clerk/nextjs";
 import "katex/dist/katex.min.css";
 import "@crayonai/react-ui/styles/index.css";
 import "./globals.css";
@@ -17,7 +18,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Toolix AI - Tool-Enabled AI Agent",
   description: "Tool-Enabled AI Agent",
-  keywords: ["AI", "assistant", "weather", "calculations", "code", "math", "chatbot"],
+  keywords: [
+    "AI",
+    "assistant",
+    "weather",
+    "calculations",
+    "code",
+    "math",
+    "chatbot",
+  ],
   authors: [{ name: "Khilesh Jawale" }],
   creator: "Khilesh Jawale",
   publisher: "Toolix AI",
@@ -28,14 +37,16 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Toolix AI - Tool-Enabled AI Agent",
-    description: "Your intelligent assistant for weather queries, mathematical calculations, code generation, and more.",
+    description:
+      "Your intelligent assistant for weather queries, mathematical calculations, code generation, and more.",
     type: "website",
     siteName: "Toolix AI",
   },
   twitter: {
     card: "summary_large_image",
     title: "Toolix AI - Tool-Enabled AI Agent",
-    description: "Your intelligent assistant for weather queries, mathematical calculations, code generation, and more.",
+    description:
+      "Your intelligent assistant for weather queries, mathematical calculations, code generation, and more.",
   },
 };
 
@@ -49,7 +60,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
       >
-        {children}
+        <ClerkProvider>
+          <header className="fixed top-4 right-4 z-50 flex items-center">
+            <Show when="signed-in">
+              <UserButton />
+            </Show>
+          </header>
+          {children}
+        </ClerkProvider>
       </body>
     </html>
   );
