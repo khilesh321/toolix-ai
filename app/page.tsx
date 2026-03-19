@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth, useClerk } from "@clerk/nextjs";
+import { UserButton, useAuth, useClerk } from "@clerk/nextjs";
 import Hls from "hls.js";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -182,6 +182,7 @@ const NAV_LINKS = [
 function Navbar({ onTryToolixClick }: { onTryToolixClick: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { isSignedIn } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -230,7 +231,7 @@ function Navbar({ onTryToolixClick }: { onTryToolixClick: () => void }) {
           </Link>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Button
             size="sm"
             onClick={onTryToolixClick}
@@ -239,6 +240,8 @@ function Navbar({ onTryToolixClick }: { onTryToolixClick: () => void }) {
             Try Toolix AI
             <ArrowRight className="size-3.5 ml-1" />
           </Button>
+
+          {isSignedIn ? <UserButton /> : null}
 
           {/* Mobile hamburger */}
           <button
@@ -502,9 +505,22 @@ function FeaturesSection() {
   const containerRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameCount = 75;
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+    const updateIsMobile = () => setIsMobile(mediaQuery.matches);
+
+    updateIsMobile();
+    mediaQuery.addEventListener("change", updateIsMobile);
+
+    return () => mediaQuery.removeEventListener("change", updateIsMobile);
+  }, []);
 
   useGSAP(
     () => {
+      if (isMobile) return;
+
       const canvas = canvasRef.current;
       if (!canvas) return;
       const context = canvas.getContext("2d");
@@ -596,7 +612,7 @@ function FeaturesSection() {
         window.removeEventListener("resize", resizeCanvas);
       };
     },
-    { scope: containerRef },
+    { scope: containerRef, dependencies: [isMobile], revertOnUpdate: true },
   );
 
   return (
@@ -608,13 +624,21 @@ function FeaturesSection() {
       <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background to-transparent z-10 pointer-events-none" />
 
       {/* Background Canvas */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <canvas
-          ref={canvasRef}
-          className="w-full h-full object-cover opacity-60 mix-blend-screen"
-        />
-        <div className="absolute inset-0 bg-background/40" />
-      </div>
+      {isMobile ? (
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_30%,oklch(0.65_0.25_250/0.1)_0%,transparent_55%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_70%,oklch(0.65_0.15_300/0.08)_0%,transparent_55%)]" />
+          <div className="absolute inset-0 bg-background/35" />
+        </div>
+      ) : (
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <canvas
+            ref={canvasRef}
+            className="w-full h-full object-cover opacity-60 mix-blend-screen"
+          />
+          <div className="absolute inset-0 bg-background/40" />
+        </div>
+      )}
 
       <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none" />
 
@@ -635,7 +659,10 @@ function FeaturesSection() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {FEATURES.map((feature, i) => (
-            <div key={feature.title} className="feature-card opacity-0">
+            <div
+              key={feature.title}
+              className={isMobile ? "" : "feature-card opacity-0"}
+            >
               <motion.div
                 whileHover={{ y: -4, scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
