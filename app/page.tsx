@@ -34,6 +34,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StaggerButton } from "@/components/ui/stagger-button";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { cn } from "@/lib/utils";
 
@@ -232,14 +233,12 @@ function Navbar({ onTryToolixClick }: { onTryToolixClick: () => void }) {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button
-            size="sm"
+          <StaggerButton
             onClick={onTryToolixClick}
             className="hidden sm:inline-flex rounded-lg shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all"
-          >
-            Try Toolix AI
-            <ArrowRight className="size-3.5 ml-1" />
-          </Button>
+            label="Try Toolix AI"
+            trailing={<ArrowRight className="size-3.5 ml-1" />}
+          />
 
           {isSignedIn ? <UserButton /> : null}
 
@@ -315,17 +314,15 @@ function Navbar({ onTryToolixClick }: { onTryToolixClick: () => void }) {
                 GitHub
               </Link>
               <div className="pt-2">
-                <Button
-                  size="sm"
+                <StaggerButton
                   onClick={() => {
                     setMobileOpen(false);
                     onTryToolixClick();
                   }}
                   className="w-full rounded-lg shadow-md shadow-primary/20"
-                >
-                  Try Toolix AI
-                  <ArrowRight className="size-3.5 ml-1" />
-                </Button>
+                  label="Try Toolix AI"
+                  trailing={<ArrowRight className="size-3.5 ml-1" />}
+                />
               </div>
             </div>
           </motion.div>
@@ -467,14 +464,12 @@ function HeroSection({ onTryToolixClick }: { onTryToolixClick: () => void }) {
           transition={{ delay: 0.9, duration: 0.6 }}
           className="flex flex-col sm:flex-row items-center gap-4"
         >
-          <Button
-            size="lg"
+          <StaggerButton
             onClick={onTryToolixClick}
-            className="text-base px-8 py-6 rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
-          >
-            Try Toolix AI
-            <ArrowRight className="size-5 ml-1" />
-          </Button>
+            className="text-base px-6 py-6 rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
+            label="Try Toolix AI"
+            trailing={<ArrowRight className="size-5 ml-1" />}
+          />
           <Link
             href="https://github.com/khilesh-jawale"
             target="_blank"
@@ -1016,7 +1011,7 @@ export default function LandingPage() {
       return;
     }
 
-    openSignIn();
+    openSignIn({ forceRedirectUrl: "/chat" });
   };
 
   return (
