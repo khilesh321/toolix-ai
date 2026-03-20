@@ -1,7 +1,26 @@
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
+import { Metadata } from "next";
 import ChatClient from "@/components/chat-client";
 import { chatExists, listChats, loadChat } from "@/lib/chat-store";
+
+export const metadata: Metadata = {
+  title: "Chat - Toolix AI",
+  description:
+    "Chat with Toolix AI - Your intelligent assistant for weather queries, mathematical calculations, code generation, and more.",
+  openGraph: {
+    title: "Chat - Toolix AI",
+    description:
+      "Chat with Toolix AI - Your intelligent assistant for weather queries, mathematical calculations, code generation, and more.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Chat - Toolix AI",
+    description:
+      "Chat with Toolix AI - Your intelligent assistant for weather queries, mathematical calculations, code generation, and more.",
+  },
+};
 
 export default async function ChatByIdPage({
   params,
