@@ -49,6 +49,12 @@
 
 :root {
   --radius: 0.625rem;
+  --bg: #050505;
+  --text: #f5f5f5;
+  --muted: #7a7a7a;
+  --stroke: #1a1a1a;
+  --accent-gradient: linear-gradient(90deg, #6ee7b7 0%, #3b82f6 100%);
+  --font-display: "Instrument Serif", ui-serif, serif;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -156,4 +162,9 @@
 html,
 body {
   scroll-behavior: smooth !important;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-style: italic;
 }

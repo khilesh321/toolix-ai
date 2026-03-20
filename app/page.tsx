@@ -337,6 +337,7 @@ function Navbar({ onTryToolixClick }: { onTryToolixClick: () => void }) {
 
 function HeroBackgroundVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -351,23 +352,30 @@ function HeroBackgroundVideo() {
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         video.play().catch(() => {});
+        setReady(true);
       });
       return () => hls.destroy();
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = src;
-      video.addEventListener("loadedmetadata", () => {
+      const onLoaded = () => {
         video.play().catch(() => {});
-      });
+        setReady(true);
+      };
+      video.addEventListener("loadedmetadata", onLoaded);
+      return () => video.removeEventListener("loadedmetadata", onLoaded);
     }
   }, []);
 
   return (
-    <video
+    <motion.video
       ref={videoRef}
       autoPlay
       loop
       muted
       playsInline
+      initial={{ opacity: 0 }}
+      animate={{ opacity: ready ? 1 : 0 }}
+      transition={{ duration: 1, ease: [0.21, 0.47, 0.32, 0.98] }}
       className="absolute inset-0 w-full h-full object-cover scale-[1.2] origin-left pointer-events-none"
     />
   );

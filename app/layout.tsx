@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "katex/dist/katex.min.css";
 import "@crayonai/react-ui/styles/index.css";
 import "./globals.css";
+import AppWrapper from "../components/app-wrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -60,7 +61,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
       >
-        <ClerkProvider>{children}</ClerkProvider>
+        <ClerkProvider>
+          <AppWrapper>{children}</AppWrapper>
+        </ClerkProvider>
       </body>
     </html>
   );
