@@ -334,7 +334,9 @@ function Navbar({ onTryToolixClick }: { onTryToolixClick: () => void }) {
 
 function HeroBackgroundVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [ready, setReady] = useState(false);
+  const opacityRef = useRef(0);
+  const animationRef = useRef<number>(0);
+  const [opacity, setOpacity] = useState(0);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -343,37 +345,89 @@ function HeroBackgroundVideo() {
     const src =
       "https://stream.mux.com/s8pMcOvMQXc4GD6AX4e1o01xFogFxipmuKltNfSYza0200.m3u8";
 
+    const handleLoaded = () => {
+      video.play().catch(() => {});
+    };
+
     if (Hls.isSupported()) {
       const hls = new Hls();
       hls.loadSource(src);
       hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        video.play().catch(() => {});
-        setReady(true);
-      });
+      hls.on(Hls.Events.MANIFEST_PARSED, handleLoaded);
       return () => hls.destroy();
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = src;
-      const onLoaded = () => {
-        video.play().catch(() => {});
-        setReady(true);
-      };
-      video.addEventListener("loadedmetadata", onLoaded);
-      return () => video.removeEventListener("loadedmetadata", onLoaded);
+      video.addEventListener("loadedmetadata", handleLoaded);
+      return () => video.removeEventListener("loadedmetadata", handleLoaded);
     }
   }, []);
 
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const fadeDuration = 0.5;
+    let lastTime = performance.now();
+
+    const animate = (currentTime: number) => {
+      lastTime = currentTime;
+
+      if (video.duration && video.duration > 0) {
+        const current = video.currentTime;
+        const duration = video.duration;
+
+        if (current <= fadeDuration) {
+          opacityRef.current = Math.min(current / fadeDuration, 1);
+        } else if (current >= duration - fadeDuration) {
+          opacityRef.current = Math.max((duration - current) / fadeDuration, 0);
+        } else {
+          opacityRef.current = 1;
+        }
+
+        setOpacity(opacityRef.current);
+      }
+
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    const handleVideoPlay = () => {
+      lastTime = performance.now();
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    video.addEventListener("play", handleVideoPlay);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      video.removeEventListener("play", handleVideoPlay);
+    };
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleEnded = async () => {
+      setOpacity(0);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      video.currentTime = 0;
+      await video.play();
+    };
+
+    video.addEventListener("ended", handleEnded);
+    return () => video.removeEventListener("ended", handleEnded);
+  }, []);
+
   return (
-    <motion.video
+    <video
       ref={videoRef}
       autoPlay
-      loop
       muted
       playsInline
-      initial={{ opacity: 0 }}
-      animate={{ opacity: ready ? 1 : 0 }}
-      transition={{ duration: 1, ease: [0.21, 0.47, 0.32, 0.98] }}
       className="absolute inset-0 w-full h-full object-cover scale-[1.2] origin-left pointer-events-none"
+      style={{ opacity }}
     />
   );
 }
