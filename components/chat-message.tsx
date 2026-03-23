@@ -114,7 +114,7 @@ export function ChatMessage({
       )}
 
       <div
-        className={`flex flex-col ${message.role === "user" ? "items-end" : "items-start"} group max-w-[90vw]`}
+        className={`flex flex-col ${message.role === "user" ? "items-end" : "items-start mb-8"} group max-w-[90vw]`}
       >
         <div
           className={`space-y-2 overflow-hidden wrap-break-word ${
