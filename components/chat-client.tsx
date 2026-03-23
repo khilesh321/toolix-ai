@@ -364,7 +364,7 @@ export default function ChatClient({
         </Card>
 
         {!autoScrollEnabled && !isNearBottom && (
-          <div className="pointer-events-none absolute bottom-24 right-4 z-20 md:right-8">
+          <div className="pointer-events-none absolute bottom-28 right-4 z-20 md:bottom-24 md:right-8">
             <Button
               type="button"
               onClick={handleScrollToLatest}
