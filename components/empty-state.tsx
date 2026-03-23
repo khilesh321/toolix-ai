@@ -24,8 +24,8 @@ const suggestions = [
 
 export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center h-full min-h-100 text-center gap-6">
-      <div className="p-4 rounded-2xl bg-linear-to-br from-primary/10 to-white/[0.05] border border-white/[0.12]">
+    <div className="mx-auto flex w-full max-w-2xl flex-col items-center justify-center text-center gap-6">
+      <div className="p-4 rounded-2xl bg-linear-to-br from-primary/10 to-white/5 border border-white/12">
         <Bot className="size-10 text-primary/70" />
       </div>
       <div className="space-y-2">
@@ -37,12 +37,12 @@ export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl px-4">
+      <div className="grid w-full grid-cols-1 gap-3 px-4 sm:grid-cols-2">
         {suggestions.map((suggestion, index) => (
           <Button
             key={index}
             variant="outline"
-            className="h-auto py-3 px-4 justify-start text-left bg-white/[0.05] border-white/[0.12] hover:bg-primary/5 hover:border-primary/30 transition-all group"
+            className="h-auto py-3 px-4 justify-start text-left bg-white/5 border-white/12 hover:bg-primary/5 hover:border-primary/30 transition-all group"
             onClick={() => onSuggestionClick(suggestion.text)}
           >
             <suggestion.icon className="size-4 mr-2 text-muted-foreground group-hover:text-primary transition-colors" />

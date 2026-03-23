@@ -109,7 +109,14 @@ export default function ChatClient({
 
           <div className="flex-1 min-h-0 overflow-hidden">
             <div className="h-full w-full overflow-y-scroll p-4 px-6 pb-20">
-              <div className="space-y-6 max-w-4xl mx-auto overflow-hidden">
+              <div
+                className={cn(
+                  "mx-auto overflow-hidden",
+                  messages.length === 0
+                    ? "flex h-full w-full items-center justify-center"
+                    : "w-full max-w-4xl space-y-6",
+                )}
+              >
                 {messages.length === 0 && (
                   <EmptyState onSuggestionClick={handleSuggestionClick} />
                 )}
