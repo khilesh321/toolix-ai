@@ -59,11 +59,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="dns-prefetch" href="https://stream.mux.com" />
+        <link
+          rel="preconnect"
+          href="https://stream.mux.com"
+          crossOrigin="anonymous"
+        />
         <link
           rel="preload"
           href="https://stream.mux.com/s8pMcOvMQXc4GD6AX4e1o01xFogFxipmuKltNfSYza0200.m3u8"
           as="fetch"
           crossOrigin="anonymous"
+          fetchPriority="high"
         />
       </head>
       <body

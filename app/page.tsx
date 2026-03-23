@@ -423,6 +423,7 @@ function HeroBackgroundVideo() {
   return (
     <video
       ref={videoRef}
+      preload="auto"
       autoPlay
       muted
       playsInline
