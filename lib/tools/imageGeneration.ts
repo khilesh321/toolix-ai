@@ -1,5 +1,5 @@
 import { tool, ToolRuntime } from "@langchain/core/tools";
-import OpenAI from "openai";
+import axios from "axios";
 import z from "zod";
 import { v2 as cloudinary } from "cloudinary";
 
@@ -9,10 +9,9 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const client = new OpenAI({
-  apiKey: process.env.A4F_API_KEY || "",
-  baseURL: "https://api.a4f.co/v1",
-});
+const invokeUrl =
+  process.env.NVIDIA_IMAGE_API_URL ||
+  "https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.2-klein-4b";
 
 export const imageGenerationTool = tool(
   async (
@@ -28,13 +27,45 @@ export const imageGenerationTool = tool(
     });
 
     try {
-      const response = await client.images.generate({
-        model: process.env.IMAGE_GEN_MODEL_ID || "provider-4/imagen-3.5",
-        prompt: prompt,
-        n: 1,
-        size: "1024x1024",
-        response_format: "b64_json",
-      });
+      if (!process.env.NVIDIA_API_KEY) {
+        throw new Error("NVIDIA_API_KEY is not configured");
+      }
+
+      const response = await axios.post(
+        invokeUrl,
+        {
+          prompt,
+          width: 1024,
+          height: 1024,
+          seed: 0,
+          steps: 4,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          timeout: 60000,
+        },
+      );
+
+      const imageData =
+        response.data?.b64_json ||
+        response.data?.image_base64 ||
+        response.data?.image ||
+        response.data?.artifacts?.[0]?.base64 ||
+        response.data?.output?.[0]?.b64_json ||
+        response.data?.output?.[0]?.image_base64;
+
+      if (!imageData || typeof imageData !== "string") {
+        throw new Error("No image data found in NVIDIA response");
+      }
+
+      const mimeType =
+        response.data?.mime_type ||
+        response.data?.output?.[0]?.mime_type ||
+        "image/png";
 
       writer?.({
         type: "progress",
@@ -42,17 +73,8 @@ export const imageGenerationTool = tool(
         message: "Uploading image to Cloudinary...",
       });
 
-      if (!response.data || response.data.length === 0) {
-        throw new Error("No image generated in response");
-      }
-
-      const imageData = response.data[0].b64_json;
-      if (!imageData) {
-        throw new Error("No image data found in response");
-      }
-
       const uploadResult = await cloudinary.uploader.upload(
-        `data:image/png;base64,${imageData}`,
+        `data:${mimeType};base64,${imageData}`,
         {
           resource_type: "image",
           folder: "Toolix-ai/generated-images",
@@ -71,8 +93,17 @@ export const imageGenerationTool = tool(
 
       return JSON.stringify(result);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
+      const errorMessage = axios.isAxiosError(error)
+        ? `NVIDIA API error${
+            error.response?.status ? ` (${error.response.status})` : ""
+          }: ${
+            typeof error.response?.data === "string"
+              ? error.response.data
+              : error.message
+          }`
+        : error instanceof Error
+          ? error.message
+          : "Unknown error";
       writer?.({
         type: "progress",
         id: "image_generation",
