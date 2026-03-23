@@ -75,7 +75,7 @@ export default function LoadingScreen({ onComplete }: Props) {
           className="absolute top-8 left-8 md:top-12 md:left-12"
         >
           <span
-            style={{ color: "var(--muted)" }}
+            style={{ color: "var(--muted-foreground)" }}
             className="text-xs md:text-sm uppercase tracking-[0.3em]"
           >
             Toolix AI

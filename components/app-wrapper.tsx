@@ -1,20 +1,31 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import LoadingScreen from "./loading-screen";
 import { AnimatePresence, motion } from "framer-motion";
 import { LoaderProvider } from "./loader-context";
+import { usePathname } from "next/navigation";
 
 export default function AppWrapper({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [ready, setReady] = useState(false);
+  const pathname = usePathname();
+  const shouldUseLoader = useMemo(() => pathname === "/", [pathname]);
+  const [isLoading, setIsLoading] = useState(shouldUseLoader);
+  const [ready, setReady] = useState(!shouldUseLoader);
+
+  useEffect(() => {
+    if (!shouldUseLoader) {
+      setIsLoading(false);
+      setReady(true);
+    }
+  }, [shouldUseLoader]);
+
   return (
     <AnimatePresence mode="wait">
-      {isLoading ? (
+      {shouldUseLoader && isLoading ? (
         <LoadingScreen
           key="loading-screen"
           onComplete={() => {
