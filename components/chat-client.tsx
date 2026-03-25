@@ -41,6 +41,8 @@ export default function ChatClient({
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
   const [isNearBottom, setIsNearBottom] = useState(true);
+  const [chatHistoryState, setChatHistoryState] =
+    useState<ChatHistoryItem[]>(chatHistory);
   const hasMessages = messages.length > 0;
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -66,6 +68,10 @@ export default function ChatClient({
   useEffect(() => {
     autoScrollEnabledRef.current = autoScrollEnabled;
   }, [autoScrollEnabled]);
+
+  useEffect(() => {
+    setChatHistoryState(chatHistory);
+  }, [chatHistory]);
 
   useEffect(() => {
     isNearBottomRef.current = isNearBottom;
@@ -299,14 +305,46 @@ export default function ChatClient({
     scrollToBottomInstant();
   }, [scrollToBottomInstant]);
 
+  const clampTitle = useCallback((value: string) => {
+    const normalized = value.replace(/\s+/g, " ").trim();
+    if (!normalized) return "New Chat";
+    if (normalized.length <= 48) return normalized;
+    return `${normalized.slice(0, 48)}...`;
+  }, []);
+
+  const upsertCurrentChatHistory = useCallback(
+    (rawTitle: string) => {
+      const now = new Date();
+      const title = clampTitle(rawTitle);
+
+      setChatHistoryState((prev) => {
+        const withoutCurrent = prev.filter((chat) => chat.chatId !== id);
+        const existing = prev.find((chat) => chat.chatId === id);
+
+        const current: ChatHistoryItem = {
+          chatId: id,
+          title,
+          createdAt: existing?.createdAt ?? now,
+          updatedAt: now,
+        };
+
+        return [current, ...withoutCurrent];
+      });
+    },
+    [clampTitle, id],
+  );
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    const trimmed = input.trim();
+    if (!trimmed) return;
+    upsertCurrentChatHistory(trimmed);
     sendMessage({ text: input }, { body: { id, mode } });
     setInput("");
   };
 
   const handleSuggestionClick = (message: string) => {
+    upsertCurrentChatHistory(message);
     sendMessage({ text: message }, { body: { id, mode } });
   };
 
@@ -342,7 +380,7 @@ export default function ChatClient({
   return (
     <div className="h-screen bg-[#0a0a0a] flex overflow-hidden min-h-0">
       <ChatSidebar
-        chats={chatHistory}
+        chats={chatHistoryState}
         activeChatId={id}
         collapsed={sidebarCollapsed}
         onToggleCollapsed={() => setSidebarCollapsed((prev) => !prev)}
