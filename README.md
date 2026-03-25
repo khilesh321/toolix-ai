@@ -2,7 +2,7 @@
 
 \*\*[Live Demo](https://toolix.khilesh.in)
 
-![Toolix AI Demo](/Toolix-AI.gif)\*\*
+![Toolix AI Demo](https://res.cloudinary.com/dna4sajpg/image/upload/v1774442316/Toolix-AI_aasiwn.gif)
 
 Toolix AI is a tool-enabled AI agent built with Next.js 16, LangGraph, and Thesys C1 Generative UI. It goes beyond traditional chatbots by combining real-time tools with adaptive, interactive UI components that render directly in the chat.
 
