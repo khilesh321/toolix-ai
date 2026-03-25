@@ -41,6 +41,7 @@ export default function ChatClient({
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
   const [isNearBottom, setIsNearBottom] = useState(true);
+  const hasMessages = messages.length > 0;
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const rafIdRef = useRef<number | null>(null);
@@ -77,13 +78,22 @@ export default function ChatClient({
   const scrollToBottomInstant = useCallback(() => {
     const element = scrollContainerRef.current;
     if (!element) return;
+    if (messages.length === 0) {
+      element.scrollTop = 0;
+      lastScrollTopRef.current = 0;
+      if (!isNearBottomRef.current) {
+        isNearBottomRef.current = true;
+        setIsNearBottom(true);
+      }
+      return;
+    }
     element.scrollTop = element.scrollHeight;
     lastScrollTopRef.current = element.scrollTop;
     if (!isNearBottomRef.current) {
       isNearBottomRef.current = true;
       setIsNearBottom(true);
     }
-  }, []);
+  }, [messages.length]);
 
   const clearSettleTasks = useCallback(() => {
     for (const id of settleRafIdsRef.current) {
@@ -100,6 +110,12 @@ export default function ChatClient({
   useEffect(() => {
     const element = scrollContainerRef.current;
     if (!element) return;
+
+    if (!hasMessages) {
+      element.scrollTop = 0;
+      lastScrollTopRef.current = 0;
+      return;
+    }
 
     scrollToBottomInstant();
 
@@ -134,9 +150,18 @@ export default function ChatClient({
     return () => {
       element.removeEventListener("scroll", handleScroll);
     };
-  }, [getDistanceFromBottom, scrollToBottomInstant]);
+  }, [getDistanceFromBottom, hasMessages, scrollToBottomInstant]);
 
   useEffect(() => {
+    if (!hasMessages) {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+      clearSettleTasks();
+      return;
+    }
+
     if (!autoScrollEnabled) {
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
@@ -206,7 +231,13 @@ export default function ChatClient({
         rafIdRef.current = null;
       }
     };
-  }, [autoScrollEnabled, clearSettleTasks, isLoading, scrollToBottomInstant]);
+  }, [
+    autoScrollEnabled,
+    clearSettleTasks,
+    hasMessages,
+    isLoading,
+    scrollToBottomInstant,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -225,6 +256,10 @@ export default function ChatClient({
   useEffect(() => {
     const element = scrollContainerRef.current;
     if (!element || typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    if (!hasMessages) {
       return;
     }
 
@@ -252,7 +287,7 @@ export default function ChatClient({
         resizeRafIdRef.current = null;
       }
     };
-  }, [scrollToBottomInstant]);
+  }, [hasMessages, scrollToBottomInstant]);
 
   const handleScrollToLatest = useCallback(() => {
     if (rafIdRef.current !== null) {
@@ -330,9 +365,9 @@ export default function ChatClient({
             >
               <div
                 className={cn(
-                  "mx-auto overflow-hidden",
+                  "mx-auto w-full",
                   messages.length === 0
-                    ? "flex h-full w-full items-center justify-center"
+                    ? "flex min-h-full items-start justify-center pt-4 pb-24 md:pt-6 md:pb-28"
                     : "w-full max-w-4xl space-y-6",
                 )}
               >
@@ -363,7 +398,7 @@ export default function ChatClient({
           </div>
         </Card>
 
-        {!autoScrollEnabled && !isNearBottom && (
+        {hasMessages && !autoScrollEnabled && !isNearBottom && (
           <div className="pointer-events-none absolute bottom-28 right-4 z-20 md:bottom-24 md:right-8">
             <Button
               type="button"
