@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Toolix AI — Demo</title>
+<!--
+  Built with the Bang Motion skill (https://github.com/bangtutorial/bang-motion) - MIT.
+  Product   : Toolix AI — tool-enabled AI agent with Generative UI (https://toolix.khilesh.in)
+  Concept   : tanya → jawab diegetik (questions typed IN the UI, answered by the product acting)
+  Fingerprint: tanya→jawab diegetik · 8 adegan · UI chat hidup / kartu tool / endcard
+               · interface sudah hidup di frame 1 · logo lahir dari UI yang terserap
+  Palette   (from brand): base #050505 · cyan #22d3ee · emerald #34d399 · gradient #6ee7b7→#3b82f6
+  Fonts     : display = Instrument Serif italic (brand display) · UI = Geist (product font)
+  Deterministic: every visual is a pure function of tl.time() — no Date.now()/Math.random() in render.
+  Autoplay + loop, no on-screen player. ?debug=1 → scrub bar.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<style>
+:root{
+  --base:#050505;
+  --ink:#f5f5f5;
+  --muted:#8a8a8a;
+  --cyan:#22d3ee;
+  --cyan-lit:#67e8f9;
+  --emerald:#34d399;
+  --blue:#3b82f6;
+  --grad:linear-gradient(90deg,#6ee7b7 0%,#3b82f6 100%);
+  --glass:rgba(255,255,255,.06);
+  --glass-brd:rgba(255,255,255,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;
+  font-family:"Geist",system-ui,sans-serif;color:var(--ink)}
+#filters{position:fixed;width:0;height:0;opacity:0;pointer-events:none}
+
+/* stage locked to 1920x1080, scaled to window */
+#stage{position:fixed;left:50%;top:50%;width:1920px;height:1080px;
+  transform:translate(-50%,-50%) scale(1);overflow:hidden;background:var(--base)}
+#world{position:absolute;inset:0;will-change:transform}
+#dom{position:absolute;inset:0}
+
+/* ---------- background: grainy gradient (techniques §7d) ---------- */
+.bgbase{position:absolute;inset:0;
+  background:
+    radial-gradient(72% 46% at 50% 110%, color-mix(in srgb,var(--cyan) 22%,transparent), transparent 62%),
+    radial-gradient(60% 50% at 82% 8%, color-mix(in srgb,var(--emerald) 12%,transparent), transparent 64%),
+    radial-gradient(70% 60% at 12% 14%, color-mix(in srgb,var(--blue) 14%,transparent), transparent 66%),
+    linear-gradient(180deg,#07090c 0%,var(--base) 58%,#06090c 100%)}
+.blob{position:absolute;border-radius:50%;pointer-events:none;filter:blur(30px);
+  mix-blend-mode:screen;will-change:transform}
+.blob.b1{left:-180px;top:-220px;width:980px;height:980px;
+  background:radial-gradient(circle,color-mix(in srgb,var(--cyan) 30%,transparent),transparent 66%)}
+.blob.b2{right:-200px;bottom:-240px;width:1040px;height:1040px;
+  background:radial-gradient(circle,color-mix(in srgb,var(--emerald) 24%,transparent),transparent 66%)}
+.blob.b3{left:520px;top:640px;width:820px;height:820px;
+  background:radial-gradient(circle,color-mix(in srgb,var(--blue) 22%,transparent),transparent 68%)}
+/* color-field for the endcard (one full field = section marker) */
+.field{position:absolute;inset:0;opacity:0;pointer-events:none;
+  background:
+    radial-gradient(70% 55% at 50% 46%, color-mix(in srgb,var(--cyan) 24%,transparent), transparent 60%),
+    radial-gradient(90% 70% at 50% 120%, color-mix(in srgb,var(--blue) 30%,transparent), transparent 64%),
+    linear-gradient(180deg,#06121a 0%,#050a10 60%,#04070b 100%)}
+.grain{position:absolute;inset:0;pointer-events:none;opacity:.06;mix-blend-mode:overlay;z-index:11}
+.vignette{position:absolute;inset:0;pointer-events:none;z-index:12;
+  background:radial-gradient(ellipse 80% 72% at 50% 50%,transparent 42%,rgba(0,0,0,.5) 86%,rgba(0,0,0,.82) 100%)}
+
+/* ---------- Toolix UI (built from the product's real components) ---------- */
+.bot-tile{border-radius:14px;display:grid;place-items:center;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--cyan) 24%,transparent),color-mix(in srgb,var(--emerald) 12%,transparent));
+  border:1px solid color-mix(in srgb,var(--cyan) 30%,transparent);
+  box-shadow:0 0 28px -6px color-mix(in srgb,var(--cyan) 55%,transparent)}
+.ic{width:54%;height:54%;stroke:var(--cyan-lit);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.chat{position:absolute;left:420px;top:96px;width:1080px;height:900px;
+  border-radius:24px;border:1px solid var(--glass-brd);
+  background:rgba(14,16,20,.66);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:0 40px 120px -30px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.03) inset;
+  overflow:hidden;display:flex;flex-direction:column}
+.chat-hd{display:flex;align-items:center;gap:14px;padding:18px 22px;
+  border-bottom:1px solid rgba(255,255,255,.08);background:rgba(10,10,10,.5);flex:none}
+.chat-hd .bot-tile{width:44px;height:44px}
+.chat-hd .nm{font-weight:600;font-size:21px;letter-spacing:-.01em}
+.chat-hd .sb{font-size:15px;color:var(--muted)}
+.chat-hd .dots{margin-left:auto;display:flex;gap:8px}
+.chat-hd .dots i{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.16);display:block}
+.chat-bd{position:relative;flex:1;overflow:hidden;padding:20px 26px 8px;display:flex;flex-direction:column;justify-content:flex-end}
+.chat-bd .spacer{flex:0 0 auto}
+.chat-ft{flex:none;padding:14px 20px 20px;border-top:1px solid rgba(255,255,255,.06)}
+
+/* messages */
+.row{display:flex;gap:12px;margin-top:18px;align-items:flex-end}
+.row.user{justify-content:flex-end}
+.row.bot{justify-content:flex-start}
+.av{width:36px;height:36px;border-radius:10px;flex:none;display:grid;place-items:center}
+.av.bot{background:linear-gradient(135deg,color-mix(in srgb,var(--cyan) 22%,transparent),color-mix(in srgb,var(--emerald) 10%,transparent));border:1px solid color-mix(in srgb,var(--cyan) 28%,transparent)}
+.av.bot .ic{width:20px;height:20px}
+.av.usr{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14)}
+.av.usr .ic{width:20px;height:20px;stroke:#ddd}
+.bub{max-width:72%;padding:13px 17px;font-size:19px;line-height:1.42;border-radius:18px}
+.bub.user{background:#f5f5f5;color:#0a0a0a;border-bottom-right-radius:6px;box-shadow:0 8px 24px -12px rgba(0,0,0,.6)}
+.bub.ai{background:var(--glass);border:1px solid var(--glass-brd);border-bottom-left-radius:6px}
+
+/* tool execution chip */
+.chip{display:inline-flex;align-items:center;gap:9px;margin-top:12px;
+  padding:8px 14px;border-radius:999px;font-size:16px;font-weight:500;
+  border:1px solid;color-mix(in srgb,var(--blue) 30%,transparent);
+  background:color-mix(in srgb,var(--blue) 12%,transparent);color:#93c5fd}
+.chip .ic{width:16px;height:16px;flex:none}
+.chip .shim{background:linear-gradient(90deg,#93c5fd 0%,#e0f2fe 50%,#93c5fd 100%);
+  background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.chip.ok{border-color:color-mix(in srgb,var(--emerald) 32%,transparent);
+  background:color-mix(in srgb,var(--emerald) 12%,transparent);color:#6ee7b7}
+.chip.ok .ic{stroke:#6ee7b7}
+
+/* result cards */
+.card{margin-top:12px;border-radius:16px;border:1px solid var(--glass-brd);
+  background:rgba(255,255,255,.045);overflow:hidden}
+.card-hd{display:flex;align-items:center;gap:10px;padding:14px 16px;font-size:16px;color:#e5e5e5}
+.card-hd .ic{width:18px;height:18px;flex:none}
+.card-hd .tag{margin-left:auto;font:500 12px "Geist Mono",monospace;color:var(--muted);
+  border:1px solid rgba(255,255,255,.1);padding:3px 8px;border-radius:6px}
+.wx{display:flex;align-items:center;gap:22px;padding:6px 18px 20px}
+.wx .big{font-size:64px;font-weight:600;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+.wx .cond{font-size:18px;color:#d4d4d4;margin-top:4px}
+.wx .meta{margin-left:auto;display:flex;gap:26px}
+.wx .meta div{text-align:right}
+.wx .meta .k{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.wx .meta .v{font-size:21px;font-weight:500;font-variant-numeric:tabular-nums;margin-top:3px}
+.srcs{padding:2px 16px 16px}
+.src{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-top:1px solid rgba(255,255,255,.06)}
+.src .fav{width:26px;height:26px;border-radius:7px;flex:none;display:grid;place-items:center;
+  font:600 13px "Geist",sans-serif;color:#0a0a0a}
+.src .t{font-size:17px;font-weight:500;line-height:1.3}
+.src .d{font-size:14.5px;color:var(--muted);margin-top:3px;line-height:1.4}
+.genwrap{position:relative;padding:14px 16px 16px}
+.genimg{position:relative;height:300px;border-radius:12px;overflow:hidden;
+  background:
+    radial-gradient(60% 40% at 20% 18%, color-mix(in srgb,#f472b6 55%,transparent), transparent 60%),
+    radial-gradient(50% 40% at 82% 26%, color-mix(in srgb,var(--cyan) 70%,transparent), transparent 62%),
+    radial-gradient(70% 50% at 50% 96%, color-mix(in srgb,#fbbf24 40%,transparent), transparent 66%),
+    linear-gradient(180deg,#120a1e 0%,#1a0f2e 50%,#0b0714 100%)}
+.genimg .sign{position:absolute;font:600 15px "Geist",sans-serif;padding:5px 10px;border-radius:6px;
+  color:#fff;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.25);white-space:nowrap}
+.genimg .sil{position:absolute;bottom:0;width:54px;background:linear-gradient(180deg,rgba(5,5,10,.2),rgba(5,5,10,.92));border-radius:6px 6px 0 0}
+.scan{position:absolute;left:0;right:0;top:0;height:3px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0;box-shadow:0 0 18px var(--cyan)}
+.yt .thumb{position:relative;height:190px;margin:0 16px;border-radius:12px;overflow:hidden;
+  background:
+    radial-gradient(60% 50% at 70% 30%, color-mix(in srgb,#38bdf8 40%,transparent), transparent 60%),
+    linear-gradient(140deg,#0b1a2a 0%,#0a1220 60%,#060a12 100%)}
+.yt .play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64px;height:64px;
+  border-radius:50%;background:rgba(255,255,255,.92);display:grid;place-items:center}
+.yt .play svg{width:26px;height:26px;fill:#0a0a0a;stroke:none;margin-left:3px}
+.yt .dur{position:absolute;right:10px;bottom:10px;font:500 13px "Geist Mono",monospace;
+  background:rgba(0,0,0,.75);padding:3px 7px;border-radius:5px}
+.yt .sum{padding:14px 18px 18px}
+.yt .sum .lbl{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.yt .li{display:flex;gap:10px;font-size:16.5px;line-height:1.45;color:#e0e0e0;margin-top:7px}
+.yt .li .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);flex:none;margin-top:9px}
+
+/* empty state */
+.empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:14px;padding-bottom:40px;opacity:0}
+.empty .bot-tile{width:74px;height:74px}
+.empty h3{font-size:30px;font-weight:600;letter-spacing:-.015em}
+.empty p{font-size:17px;color:var(--muted)}
+.starter{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:10px;max-width:760px}
+.starter span{font-size:15.5px;padding:9px 15px;border-radius:999px;cursor:default;
+  border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#d4d4d4}
+
+/* input footer */
+.inp{display:flex;align-items:center;gap:12px;padding:10px 12px 10px 16px;border-radius:16px;
+  border:1px solid rgba(255,255,255,.1);background:rgba(10,10,10,.7)}
+.mode{display:flex;align-items:center;gap:7px;font-size:15px;color:#d4d4d4;flex:none;
+  border-right:1px solid rgba(255,255,255,.1);padding-right:12px}
+.mode .ic{width:17px;height:17px}
+.mode .cdot{width:7px;height:7px;border-radius:50%;background:var(--cyan)}
+.ph{flex:1;font-size:18px;color:var(--muted);white-space:nowrap;overflow:hidden}
+.ph .caret{display:inline-block;width:2px;height:1.05em;background:var(--cyan);vertical-align:-.2em;margin-right:2px}
+.send{width:40px;height:40px;border-radius:11px;flex:none;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--emerald),var(--blue))}
+.send .ic{width:20px;height:20px;stroke:#04121a}
+
+/* capability flash */
+.caps{position:absolute;left:50%;bottom:132px;transform:translateX(-50%);display:flex;gap:14px;z-index:6;opacity:0}
+.cap{display:flex;flex-direction:column;align-items:center;gap:9px;width:132px}
+.cap .bot-tile{width:62px;height:62px;border-radius:16px}
+.cap span{font-size:15px;color:#cfcfcf;text-align:center;line-height:1.2}
+
+/* ---------- cinematic type ---------- */
+.serif{font-family:"Instrument Serif",Georgia,serif;font-style:italic;font-weight:400}
+.hero{position:absolute;left:0;right:0;top:250px;text-align:center;font-size:124px;line-height:1.04;
+  letter-spacing:-.015em;color:#fff;text-shadow:0 6px 40px rgba(0,0,0,.6);white-space:nowrap}
+.hero .w{display:inline-block;white-space:nowrap;will-change:transform,opacity,filter;opacity:0}
+.hero .w.acts{font-style:normal;color:transparent;background:var(--grad);
+  -webkit-background-clip:text;background-clip:text}
+.brandrow{position:absolute;left:0;right:0;top:150px;display:flex;align-items:center;justify-content:center;gap:14px;opacity:0}
+.brandrow .bot-tile{width:46px;height:46px}
+.brandrow .bm{font-size:22px;font-weight:600;letter-spacing:.02em;color:#e8e8e8}
+.sub{position:absolute;left:0;right:0;top:430px;text-align:center;font-size:26px;color:#a3a3a3;opacity:0}
+
+/* endcard */
+.end{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:0;opacity:0;z-index:30;pointer-events:none}
+.end .bot-tile{width:120px;height:120px;border-radius:28px}
+.end .ttl{font-size:104px;font-weight:600;letter-spacing:-.03em;margin-top:30px;line-height:1}
+.end .tag{font-family:"Instrument Serif",Georgia,serif;font-style:italic;font-size:46px;
+  color:#d9d9d9;margin-top:16px}
+.end .tag b{font-style:normal;font-weight:400;color:transparent;background:var(--grad);
+  -webkit-background-clip:text;background-clip:text}
+.cta{margin-top:44px;display:inline-flex;align-items:center;gap:12px;padding:17px 34px;
+  border-radius:14px;font-size:22px;font-weight:600;color:#04121a;
+  background:linear-gradient(135deg,var(--cyan-lit),var(--emerald));
+  box-shadow:0 16px 50px -12px color-mix(in srgb,var(--cyan) 70%,transparent)}
+.cta .ic{width:22px;height:22px;stroke:#04121a}
+.end .url{margin-top:22px;font:500 17px "Geist Mono",monospace;color:var(--muted)}
+
+/* debug panel */
+#ui{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);display:none;align-items:center;
+  gap:14px;padding:11px 18px;border-radius:16px;background:rgba(14,16,22,.92);
+  border:1px solid rgba(255,255,255,.1);font-size:13px;color:#a0a6b4;z-index:60}
+#ui.on{display:flex}
+#ui button{background:#262a34;color:#fff;border:none;padding:8px 16px;border-radius:9px;font:inherit;cursor:pointer}
+#scrub{width:340px;accent-color:var(--cyan)}
+#clock{font-variant-numeric:tabular-nums;min-width:5.2ch;text-align:right}
+</style>
+</head>
+<body>
+<svg id="filters" width="0" height="0" style="position:absolute">
+  <defs>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="3" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+  </defs>
+</svg>
+
+<div id="stage">
+  <div id="world">
+    <div class="bgbase"></div>
+    <i class="blob b1" id="bl1"></i><i class="blob b2" id="bl2"></i><i class="blob b3" id="bl3"></i>
+    <div class="field" id="field"></div>
+    <div id="dom">
+
+      <!-- ===== the live Toolix chat interface ===== -->
+      <div class="chat" id="chat">
+        <div class="chat-hd">
+          <div class="bot-tile" id="logo-mark">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+          </div>
+          <div><div class="nm">Toolix AI</div><div class="sb">Tool-Enabled AI Agent</div></div>
+          <div class="dots"><i></i><i></i><i></i></div>
+        </div>
+
+        <div class="chat-bd" id="chatbd">
+          <div class="spacer"></div>
+          <div class="empty" id="empty">
+            <div class="bot-tile"><svg class="ic" viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></div>
+            <h3>Where should we start?</h3>
+            <p>Ask anything — Toolix picks the right tool and acts</p>
+            <div class="starter" id="starter">
+              <span>Weather in Tokyo</span><span>Latest AI news</span><span>Summarize a YouTube video</span>
+              <span>Generate an image</span><span>Solve a calculation</span>
+            </div>
+          </div>
+
+          <!-- E1 · weather -->
+          <div class="turn" id="t1" style="display:none">
+            <div class="row user" id="m1"><div class="bub user">What's the weather in Tokyo right now?</div></div>
+            <div class="row bot">
+              <div class="av bot"><svg class="ic" viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></div>
+              <div>
+                <div class="chip" id="c1"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18M3 12h18"/></svg><span class="shim">Looking up weather in Tokyo</span></div>
+                <div class="card" id="r1">
+                  <div class="card-hd"><svg class="ic" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9Z"/></svg>Current weather<span class="tag">get_weather</span></div>
+                  <div class="wx">
+                    <svg class="ic" style="width:52px;height:52px;stroke:#fbbf24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/></svg>
+                    <div><div class="big">19°</div><div class="cond">Scattered clouds</div></div>
+                    <div class="meta">
+                      <div><div class="k">Humidity</div><div class="v">64%</div></div>
+                      <div><div class="k">Wind</div><div class="v">3.4 m/s</div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- E2 · web search -->
+          <div class="turn" id="t2" style="display:none">
+            <div class="row user" id="m2"><div class="bub user">What are today's biggest AI breakthroughs?</div></div>
+            <div class="row bot">
+              <div class="av bot"><svg class="ic" viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></div>
+              <div>
+                <div class="chip" id="c2"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="shim">Searching the web</span></div>
+                <div class="card" id="r2">
+                  <div class="card-hd"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Sources<span class="tag">web_search</span></div>
+                  <div class="srcs" id="srcs">
+                    <div class="src"><div class="fav" style="background:#67e8f9">ar</div><div><div class="t">Anthropic announces next-gen reasoning models</div><div class="d">anthropic.com — Longer-horizon planning and native tool use land this quarter.</div></div></div>
+                    <div class="src"><div class="fav" style="background:#a78bfa">TA</div><div><div class="t">AI agents move from demos to production</div><div class="d">theverge.com — Teams ship agents that plan, call tools, and self-correct.</div></div></div>
+                    <div class="src"><div class="fav" style="background:#fbbf24">OB</div><div><div class="t">Open-weight models close the gap on reasoning</div><div class="d">techcrunch.com — A new open release rivals closed leaders on benchmarks.</div></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- E3 · image generation -->
+          <div class="turn" id="t3" style="display:none">
+            <div class="row user" id="m3"><div class="bub user">Generate an image of a neon-lit Tokyo alley at night</div></div>
+            <div class="row bot">
+              <div class="av bot"><svg class="ic" viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></div>
+              <div>
+                <div class="chip" id="c3"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg><span class="shim">Generating your image</span></div>
+                <div class="card" id="r3">
+                  <div class="card-hd"><svg class="ic" viewBox="0 0 24 24"><path d="M15 8h.01M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="m3 16 5-5 4 4 3-3 6 6"/></svg>Image generated<span class="tag">flux.2-klein-4b</span></div>
+                  <div class="genwrap">
+                    <div class="genimg" id="genimg">
+                      <div class="sign" style="left:22px;top:30px;color:#f9a8d4;border-color:#f472b6">ラーメン</div>
+                      <div class="sign" style="left:170px;top:78px;color:#a5f3fc;border-color:#22d3ee">Bar</div>
+                      <div class="sign" style="left:330px;top:40px;color:#fde68a;border-color:#fbbf24">居酒屋</div>
+                      <div class="sign" style="left:120px;top:150px;color:#c4b5fd;border-color:#a78bfa">Open 24h</div>
+                      <div class="sil" style="left:60px;height:120px"></div>
+                      <div class="sil" style="left:150px;height:180px"></div>
+                      <div class="sil" style="left:255px;height:96px"></div>
+                      <div class="sil" style="left:360px;height:150px"></div>
+                      <div class="scan" id="scan"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- E4 · youtube transcript -->
+          <div class="turn" id="t4" style="display:none">
+            <div class="row user" id="m4"><div class="bub user">Summarize this Starship launch video</div></div>
+            <div class="row bot">
+              <div class="av bot"><svg class="ic" viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></div>
+              <div>
+                <div class="chip" id="c4"><svg class="ic" viewBox="0 0 24 24"><path d="M2.5 17a24 24 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49 49 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24 24 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49 49 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg><span class="shim">Reading the transcript</span></div>
+                <div class="card yt" id="r4">
+                  <div style="padding-top:14px"><div class="thumb">
+                    <div class="play"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg></div>
+                    <div class="dur">18:42</div>
+                  </div></div>
+                  <div class="sum">
+                    <div class="lbl">Key points · youtube_transcript_fetcher</div>
+                    <div class="li"><span class="dot"></span>Booster completes its full burn and lands on the launch tower</div>
+                    <div class="li"><span class="dot"></span>Ship reaches orbital insertion and survives peak reentry heating</div>
+                    <div class="li"><span class="dot"></span>Team confirms the flight's main objectives were met</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-ft">
+          <div class="inp" id="inp">
+            <div class="mode"><span class="cdot"></span>General<svg class="ic" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div>
+            <div class="ph" id="ph"><span class="caret"></span><span id="phtext">Ask about the weather in any city...</span></div>
+            <div class="send" id="send"><svg class="ic" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></div>
+          </div>
+        </div>
+
+        <!-- capability flash -->
+        <div class="caps" id="caps">
+          <div class="cap"><div class="bot-tile"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></div><span>Web Search</span></div>
+          <div class="cap"><div class="bot-tile"><svg class="ic" viewBox="0 0 24 24"><path d="M15 8h.01M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="m3 16 5-5 4 4 3-3 6 6"/></svg></div><span>Image Gen</span></div>
+          <div class="cap"><div class="bot-tile"><svg class="ic" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9Z"/></svg></div><span>Weather</span></div>
+          <div class="cap"><div class="bot-tile"><svg class="ic" viewBox="0 0 24 24"><path d="M2.5 17a24 24 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49 49 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24 24 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49 49 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg></div><span>YouTube</span></div>
+          <div class="cap"><div class="bot-tile"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div><span>Image Search</span></div>
+          <div class="cap"><div class="bot-tile"><svg class="ic" viewBox="0 0 24 24"><path d="M5 8h19M5 12h9M5 16h6"/><circle cx="18" cy="15" r="4"/></svg></div><span>Calculator</span></div>
+        </div>
+      </div>
+
+      <!-- ===== cinematic opener / endcard (outside the chat) ===== -->
+      <div class="brandrow" id="brandrow">
+        <div class="bot-tile"><svg class="ic" viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></div>
+        <span class="bm">Toolix AI</span>
+      </div>
+      <h1 class="hero serif" id="hero"><span class="w">Think</span> <span class="w">less</span> <span class="w acts">act</span> <span class="w">more</span></h1>
+      <div class="sub" id="sub">Your intelligent assistant, powered by real tools</div>
+
+      <div class="end" id="end">
+        <div class="bot-tile"><svg class="ic" viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></div>
+        <div class="ttl">Toolix AI</div>
+        <div class="tag">AI that doesn't just think — it <b>acts</b></div>
+        <div class="cta">Try Toolix AI<svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="url">toolix.khilesh.in</div>
+      </div>
+
+    </div>
+  </div>
+  <div class="grain" id="grain" style="filter:url(#grain)"></div>
+  <div class="vignette"></div>
+</div>
+
+<div id="ui">
+  <button id="btn-play">Pause</button><button id="btn-restart">Restart</button>
+  <input id="scrub" type="range" min="0" max="1000" value="0">
+  <span id="clock">0.00s</span>
+</div>
+
+<script type="module">
+/* ============================================================
+   TIMELINE — the single source of time. render(t) is pure.
+   ============================================================ */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const W=1920,H=1080;
+const world=$('#world'), stage=$('#stage');
+const Q=new URLSearchParams(location.search);
+
+const DURATION=46.0;
+const tl=gsap.timeline({paused:true});
+
+/* ---------- directional motion blur (techniques §2) ---------- */
+const defs=$('#filters defs'); let fc=0;
+function makeBlur(){const id='mb'+(fc++),NS='http://www.w3.org/2000/svg';
+  const f=document.createElementNS(NS,'filter');f.id=id;
+  f.setAttribute('x','-70%');f.setAttribute('y','-70%');
+  f.setAttribute('width','240%');f.setAttribute('height','240%');
+  const g=document.createElementNS(NS,'feGaussianBlur');g.setAttribute('stdDeviation','0 0');
+  f.appendChild(g);defs.appendChild(f);return{url:`url(#${id})`,node:g};}
+function blurTween(targets,at,from,to,dur,{ease='power3.out',ax=1,ay=.08}={}){
+  const b=makeBlur(),o={v:from};
+  tl.set(targets,{filter:b.url},at);
+  tl.to(o,{v:to,duration:dur,ease,onUpdate(){b.node.setAttribute('stdDeviation',`${(o.v*ax).toFixed(2)} ${(o.v*ay).toFixed(2)}`);}},at);
+  tl.set(targets,{filter:'none'},at+dur);}
+const VERT={ax:.1,ay:1},HORZ={ax:1,ay:.08},BOTH={ax:1,ay:1};
+
+/* ---------- camera rig (techniques §3b) ---------- */
+const CAM={s:1,fx:W/2,fy:H/2};
+function applyCam(t){
+  const s=CAM.s*(1+.012*Math.sin(t*.6));            // breathing layered on the shot
+  let tx=W/2-CAM.fx*s, ty=H/2-CAM.fy*s;
+  tx=Math.min(0,Math.max(W-W*s,tx)); ty=Math.min(0,Math.max(H-H*s,ty));
+  world.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;}
+function rectIn(el,root){let x=0,y=0,n=el;while(n&&n!==root){x+=n.offsetLeft;y+=n.offsetTop;n=n.offsetParent;}
+  return{x,y,w:el.offsetWidth,h:el.offsetHeight};}
+function fr(el,fill){const r=rectIn(el,world);
+  return[Math.max(1,Math.min(W*fill/Math.max(r.w,1),H*fill/Math.max(r.h,1))),r.x+r.w/2,r.y+r.h/2];}
+/* lazy: measured on first render, so display:none panels are laid out by then.
+   scale clamped so the world never over-zooms past its own edges. */
+const shot=(at,dur,el,fill,ease='power2.inOut')=>{
+  tl.to(CAM,{s:()=>Math.min(1.6,Math.max(1,fr(el,fill)[0])),fx:()=>fr(el,fill)[1],fy:()=>fr(el,fill)[2],duration:dur,ease},at);};
+const cutTo=(at,el,fill)=>{const[s,fx,fy]=fr(el,fill);tl.set(CAM,{s,fx,fy},at);};
+const cutCam=(at,s,fx,fy)=>tl.set(CAM,{s,fx,fy},at);
+const shotCam=(at,dur,s,fx,fy,ease='power2.inOut')=>tl.to(CAM,{s,fx,fy,duration:dur,ease},at);
+
+/* ---------- icon swaps for the tool chips (running → done) ---------- */
+const GLOBE='<circle cx="12" cy="12" r="9"/><path d="M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18M3 12h18"/>';
+const SEARCH='<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>';
+const IMG='<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>';
+const YT='<path d="M2.5 17a24 24 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49 49 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24 24 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49 49 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/>';
+const CHECK='<path d="M20 6 9 17l-5-5"/>';
+const chip=(id,glyph,at)=>{const el=$(id);
+  tl.fromTo(el,{opacity:0,yPercent:40,scale:.9},{opacity:1,yPercent:0,scale:1,duration:.5,ease:'power4.out',immediateRender:false},at);
+  tl.set($('svg',el),{innerHTML:glyph},at+.02);
+  tl.to(el,{borderColor:'color-mix(in srgb,#34d399 32%,transparent)',backgroundColor:'color-mix(in srgb,#34d399 12%,transparent)',color:'#6ee7b7',duration:.35},at+1.1);
+  tl.set($('svg',el),{innerHTML:CHECK},at+1.1);};
+
+/* ============================================================
+   RUNDOWN — tanya → jawab diegetik
+   ============================================================ */
+const chat=$('#chat'),hero=$('#hero'),brandrow=$('#brandrow'),sub=$('#sub'),end=$('#end');
+const bd=$('#chatbd'),inp=$('#inp'),send=$('#send'),ph=$('#phtext'),empty=$('#empty');
+const turn=t=>$('#'+t);
+const turns={t1:$('#t1'),t2:$('#t2'),t3:$('#t3'),t4:$('#t4')};
+const msgs={m1:$('#m1'),m2:$('#m2'),m3:$('#m3'),m4:$('#m4')};
+const chips={c1:$('#c1'),c2:$('#c2'),c3:$('#c3'),c4:$('#c4')};
+const cards={r1:$('#r1'),r2:$('#r2'),r3:$('#r3'),r4:$('#r4')};
+const genimg=$('#genimg'),scan=$('#scan'),caps=$('#caps'),field=$('#field'),grain=$('#grain');
+
+/* hero words — animated per word (keeps the gradient on .acts intact) */
+const words=$$('.w',hero);
+
+/* background is alive from frame 0 */
+tl.set(['.bgbase','.blob','.grain','.vignette'],{opacity:1},0);
+tl.set(field,{opacity:0},0);
+
+/* ---------- S1 · opener: tagline over a cinematic dark field (chat hidden) ---------- */
+tl.set(chat,{autoAlpha:0,yPercent:45},0);                       // interface waits below frame
+cutCam(0,1.08,W/2,H/2);                                        // wide, gentle push in
+shotCam(0,4.2,1.0,W/2,H/2,'sine.out');
+tl.fromTo(brandrow,{opacity:0,yPercent:40},{opacity:1,yPercent:0,duration:.7,ease:'power4.out',immediateRender:false},.35);
+/* each word rises out of a directional blur; "act" lands last as the punch */
+const heroIn=(w,at,{dur=.85,ease='power4.out',from=70}={})=>{
+  tl.fromTo(w,{opacity:0,yPercent:from,scaleY:1.35},{opacity:1,yPercent:0,scaleY:1,duration:dur,ease,immediateRender:false},at);
+  blurTween(w,at,24,0,dur,VERT);};
+heroIn(words[0],.7); heroIn(words[1],1.0);
+heroIn(words[2],1.45,{dur:1.0,ease:'expo.out',from:40});
+heroIn(words[3],1.85);
+tl.fromTo(sub,{opacity:0,yPercent:30},{opacity:1,yPercent:0,duration:.8,ease:'power3.out',immediateRender:false},2.4);
+
+/* ---------- S1→S2 · tagline lifts away, the interface rises in (transition §4c #8) ---------- */
+tl.to([brandrow,hero,sub],{scale:1.18,filter:'blur(14px)',opacity:0,duration:.6,ease:'power2.in'},3.8);
+/* cut to a medium shot; the drift below eases it back out as the chat settles */
+{const[sc]=fr(chat,.72); cutCam(4.35,sc,W/2,H/2);}
+tl.set(chat,{autoAlpha:1},4.35);
+tl.fromTo(chat,{yPercent:45,opacity:0},{yPercent:0,opacity:1,duration:1.0,ease:'power3.out',immediateRender:false},4.35);
+/* the interface assembles as it arrives */
+tl.from('#logo-mark',{scale:0,rotate:-90,duration:.9,ease:'back.out(1.7)',immediateRender:false},4.6);
+tl.from('.chat-hd .nm',{opacity:0,yPercent:60,duration:.6,ease:'power4.out',immediateRender:false},4.8);
+tl.from('.chat-hd .sb',{opacity:0,yPercent:60,duration:.6,ease:'power4.out',immediateRender:false},4.92);
+tl.from('.chat-hd .dots i',{opacity:0,scale:0,duration:.4,stagger:.08,ease:'back.out(2)',immediateRender:false},5.0);
+
+/* ---------- S2 · the interface is alive: empty state ---------- */
+tl.to(empty,{opacity:1,duration:.8,ease:'power3.out'},5.2);
+tl.from(empty,{scale:.94,duration:.8,ease:'power3.out',immediateRender:false},5.2);
+tl.from($$('.starter span'),{opacity:0,yPercent:30,scale:.9,duration:.5,stagger:.07,ease:'back.out(1.8)',immediateRender:false},5.7);
+shot(inp,6.3,.8,1.5,'power2.inOut');
+
+/* ---------- helper: one diegetic turn (type → send → act → bloom) ---------- */
+let turnIdx=1;
+function doTurn({t,at,glyph,prompt,type=true}){
+  const T=turns[t],m=msgs['m'+turnIdx],c=chips['c'+turnIdx],r=cards['r'+turnIdx];
+  tl.set(T,{display:'block'},at);
+  if(turnIdx===1)tl.to(empty,{opacity:0,duration:.35},at);   // hand off from the empty state
+  if(type){
+    /* the input lights up while the prompt is typed — focus without a zoom */
+    tl.to(inp,{borderColor:'color-mix(in srgb,#22d3ee 55%,transparent)',boxShadow:'0 0 0 1px color-mix(in srgb,#22d3ee 30%,transparent),0 0 30px -8px color-mix(in srgb,#22d3ee 50%,transparent)',duration:.4},at);
+    tl.set(ph,{color:'#f5f5f5'},at+.15);
+    const o={i:0};
+    tl.fromTo(o,{i:0},{i:prompt.length,duration:prompt.length/22,ease:'none',immediateRender:false,
+      onUpdate(){ph.textContent=prompt.slice(0,Math.round(o.i));}},at+.15);
+    tl.fromTo(send,{scale:.9},{scale:1.08,duration:.35,ease:'sine.inOut',yoyo:true,repeat:1,immediateRender:false},at+.15+prompt.length/22);
+  }
+  const sendAt=type?at+.25+prompt.length/22:at;
+  tl.to(send,{scale:.9,duration:.12,yoyo:true,repeat:1,ease:'power2.inOut'},sendAt);
+  /* the prompt leaves the input and lands in the thread */
+  tl.set(m,{autoAlpha:1},sendAt+.12);
+  if(type){ tl.fromTo(m,{opacity:0,yPercent:70,scale:.94},{opacity:1,yPercent:0,scale:1,duration:.6,ease:'power3.out',immediateRender:false},sendAt+.12);
+            tl.to(inp,{borderColor:'rgba(255,255,255,.1)',boxShadow:'none',duration:.5},sendAt);
+            tl.set(ph,{color:'',textContent:''},sendAt+.12); }
+  else { tl.fromTo(m,{opacity:0,yPercent:24,scale:.94},{opacity:1,yPercent:0,scale:1,duration:.6,ease:'back.out(1.6)',immediateRender:false},sendAt); }
+  const after=type?sendAt+.12:sendAt;
+  chip('#'+c.id,glyph,after+.55);
+  /* result card blooms open */
+  const bloomAt=after+1.65;
+  tl.set(r,{height:0,opacity:1},bloomAt);
+  tl.to(r,{height:'auto',duration:.85,ease:'power4.out'},bloomAt);
+  tl.fromTo(r,{scale:.97},{scale:1,duration:.85,ease:'power4.out',immediateRender:false},bloomAt);
+  turnIdx++;
+  return bloomAt;
+}
+
+/* ---------- S3 · weather ---------- */
+/* a slow, safe creep across the whole demo — momentum without over-zooming */
+shotCam(4.35,27.0,1.06,W/2,H/2+30,'sine.inOut');
+
+{const b=doTurn({t:'t1',at:7.7,glyph:GLOBE,prompt:"What's the weather in Tokyo right now?",type:true});}
+/* ---------- S4 · web search ---------- */
+{const b=doTurn({t:'t2',at:12.6,glyph:SEARCH,prompt:"What are today's biggest AI breakthroughs?",type:true,camFill:1.4});
+ tl.fromTo($$('.src'),{opacity:0,xPercent:-24},{opacity:1,xPercent:0,duration:.55,stagger:.14,ease:'power4.out',immediateRender:false},b+.3);}
+/* ---------- S5 · image generation (the special moment ✦) ---------- */
+{const b=doTurn({t:'t3',at:18.4,glyph:IMG,prompt:"Generate an image of a neon-lit Tokyo alley at night",type:true,camFill:1.4});
+ const devAt=b+.35;
+ tl.set(genimg,{autoAlpha:1},devAt);
+ tl.fromTo(genimg,{clipPath:'inset(0 0 100% 0)',filter:'blur(14px) saturate(.4)'},{clipPath:'inset(0 0 0% 0)',filter:'blur(0px) saturate(1)',duration:1.5,ease:'power3.inOut',immediateRender:false},devAt);
+ tl.fromTo(scan,{opacity:0,top:'0%'},{opacity:1,duration:.2,immediateRender:false},devAt);
+ tl.fromTo(scan,{top:'0%'},{top:'100%',duration:1.5,ease:'power3.inOut',immediateRender:false},devAt);
+ tl.to(scan,{opacity:0,duration:.3},devAt+1.5);}
+/* ---------- S6 · youtube transcript ---------- */
+{const b=doTurn({t:'t4',at:24.6,glyph:YT,prompt:"Summarize this Starship launch video",type:true});
+ tl.fromTo($$('#r4 .li'),{opacity:0,xPercent:-20},{opacity:1,xPercent:0,duration:.5,stagger:.16,ease:'power4.out',immediateRender:false},b+.45);}
+
+/* ---------- S7 · capability flash: the whole toolset, one wide ---------- */
+{const[s,fx,fy]=fr(chat,.86); shotCam(31.4,1.1,s,fx,fy,'power2.inOut');}
+tl.to(caps,{opacity:1,duration:.5},31.8);
+tl.to(bd,{opacity:.16,duration:.5},31.6);                        // clear the thread so tiles read clean
+tl.fromTo($$('.cap'),{opacity:0,yPercent:60,scale:.7},{opacity:1,yPercent:0,scale:1,duration:.6,stagger:.09,ease:'back.out(1.9)',immediateRender:false},31.8);
+tl.to($$('.cap .bot-tile'),{y:-8,duration:1.4,ease:'sine.inOut',yoyo:true,repeat:1,stagger:.1},32.6);
+
+/* ---------- S7→S8 · the interface dissolves into the brand field ---------- */
+shotCam(36.1,.9,1.32,W/2,H/2,'power2.in');                       // world push-in (not the element)
+tl.to(chat,{opacity:0,filter:'blur(20px)',scale:1.1,duration:.8,ease:'power3.in'},36.3);
+tl.set(field,{display:'block',opacity:1},36.5);
+tl.to('.blob',{opacity:.55,duration:.8},36.5);
+
+/* ---------- S8 · endcard ---------- */
+cutCam(37.0,1.0,W/2,H/2);
+tl.to(end,{opacity:1,duration:.6},37.0);
+tl.fromTo('.end .bot-tile',{scale:0,rotate:-120},{scale:1,rotate:0,duration:1.0,ease:'back.out(1.6)',immediateRender:false},37.0);
+tl.fromTo('.end .ttl',{opacity:0,yPercent:50,filter:'blur(12px)'},{opacity:1,yPercent:0,filter:'blur(0px)',duration:.9,ease:'power4.out',immediateRender:false},37.35);
+tl.fromTo('.end .tag',{opacity:0,yPercent:30},{opacity:1,yPercent:0,duration:.8,ease:'power3.out',immediateRender:false},37.9);
+tl.fromTo('.end .cta',{opacity:0,yPercent:30,scale:.9},{opacity:1,yPercent:0,scale:1,duration:.7,ease:'back.out(1.8)',immediateRender:false},38.7);
+tl.fromTo('.end .url',{opacity:0},{opacity:1,duration:.6,immediateRender:false},39.3);
+shotCam(37.2,7.0,1.04,W/2,H/2,'sine.inOut');                       // slow push on the hold
+
+/* ---------- living background (deterministic, from t) ---------- */
+function bg(t){
+  $('#bl1').style.transform=`translate(${Math.sin(t*.21)*60}px,${Math.cos(t*.17)*46}px)`;
+  $('#bl2').style.transform=`translate(${Math.cos(t*.19)*56}px,${Math.sin(t*.23)*50}px)`;
+  $('#bl3').style.transform=`translate(${Math.sin(t*.16+2)*48}px,${Math.cos(t*.2+1)*40}px)`;
+  const k=Math.floor(t*12); grain.style.transform=`translate(${k*37%60-30}px,${k*61%60-30}px)`;   // living grain, no random
+}
+
+/* ---------- render loop ---------- */
+function render(t){ applyCam(t); bg(t); }
+
+/* ---------- player / fit / loop ---------- */
+const fit=()=>{const s=Math.min(innerWidth/W,innerHeight/H);stage.style.transform=`translate(-50%,-50%) scale(${s})`;};
+addEventListener('resize',fit);fit();
+const clock=$('#clock'),scrub=$('#scrub'),btn=$('#btn-play');let scrubbing=false;
+(function frame(){const t=tl.time();render(t);clock.textContent=t.toFixed(2)+'s';
+  if(!scrubbing)scrub.value=String(t/DURATION*1000);requestAnimationFrame(frame);})();
+const toggle=()=>{if(tl.paused()||tl.progress()>=1){if(tl.progress()>=1)tl.progress(0);tl.play();btn.textContent='Pause';}else{tl.pause();btn.textContent='Play';}};
+btn.onclick=toggle;$('#btn-restart').onclick=()=>{tl.pause(0);tl.play();btn.textContent='Pause';};
+scrub.addEventListener('pointerdown',()=>{scrubbing=true;tl.pause();btn.textContent='Play';});
+addEventListener('pointerup',()=>scrubbing=false);
+scrub.addEventListener('input',()=>{tl.pause();tl.time(scrub.value/1000*DURATION);});
+addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();toggle();}
+  if(/^[rR]$/.test(e.key)){tl.pause(0);tl.play();}if(/^[hH]$/.test(e.key))$('#ui').classList.toggle('on');});
+if(Q.has('debug'))$('#ui').classList.add('on');
+tl.eventCallback('onComplete',()=>{tl.play(0);});
+
+/* loop-reset at t=0 so each cycle starts from a clean world */
+tl.set(Object.values(turns),{display:'none'},0);
+tl.set([empty,caps,end],{opacity:0},0);
+tl.set(bd,{opacity:1},0);
+tl.set(chat,{scale:1,filter:'none',yPercent:45},0);
+tl.set(field,{opacity:0},0);
+tl.set('.blob',{opacity:1},0);
+
+/* seek synchronously (for scrub / export) */
+const seek=t=>{tl.pause();tl.time(t,false);if(gsap.ticker.tick)gsap.ticker.tick();render(t);};
+window.OPENER={tl,DURATION,seek,ready:false,CAM};
+document.fonts.ready.then(()=>{window.OPENER.ready=true;
+  if(Q.has('clean'))return;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){seek(40.6);return;}   // hold on the endcard
+  tl.play(0);});
+</script>
+</body>
+</html>

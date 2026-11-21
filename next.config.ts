@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["mongodb"],
   transpilePackages: [
     "@thesysai/genui-sdk",
     "@crayonai/react-ui",

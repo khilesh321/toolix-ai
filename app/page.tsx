@@ -36,6 +36,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { StaggerButton } from "@/components/ui/stagger-button";
 import { Shimmer } from "@/components/ai-elements/shimmer";
+import { MotionDemo } from "@/components/motion-demo";
 import { cn } from "@/lib/utils";
 
 const CYCLING_WORDS = [
@@ -965,33 +966,9 @@ function DemoPreviewSection({
         <FadeIn>
           <motion.div
             style={{ rotateX, scale, transformPerspective: 1200 }}
-            className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm overflow-hidden shadow-2xl shadow-primary/5"
+            className="rounded-2xl overflow-hidden shadow-2xl shadow-primary/5"
           >
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-border/60 bg-card/80">
-              <div className="p-1.5 rounded-lg bg-linear-to-br from-primary/20 to-primary/5 border border-primary/20">
-                <Bot className="size-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold">Toolix AI</p>
-                <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                  <Sparkles className="size-2.5" /> Tool-Enabled AI Agent
-                </p>
-              </div>
-              <div className="ml-auto flex gap-1.5">
-                <div className="size-3 rounded-full bg-muted/60" />
-                <div className="size-3 rounded-full bg-muted/60" />
-                <div className="size-3 rounded-full bg-muted/60" />
-              </div>
-            </div>
-
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full"
-              src="/ToolixPromo.mp4"
-            />
+            <MotionDemo />
           </motion.div>
         </FadeIn>
 
