@@ -13,7 +13,13 @@ import { ReactLenis } from "lenis/react";
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
-import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
+import {
+  motion,
+  AnimatePresence,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "motion/react";
 import {
   ArrowRight,
   Bot,
@@ -157,20 +163,31 @@ function CyclingText() {
     return () => clearInterval(interval);
   }, []);
 
+  // Keep the rotator inline, but reserve the width of the LONGEST word with an
+  // invisible sizer so the container never resizes. Without it, each word change
+  // resized the container and re-centered the whole line (a visible jump ~2s in).
+  // Inactive words are aria-hidden so screen readers only announce the active one.
   return (
-    <span className="inline-flex h-[1.2em] overflow-hidden relative align-bottom">
-      <AnimatePresence mode="wait">
+    <span className="relative inline-flex h-[1.2em] items-center overflow-hidden align-bottom">
+      <span aria-hidden className="invisible whitespace-nowrap">
+        {CYCLING_WORDS.reduce((a, b) => (b.length > a.length ? b : a))}
+      </span>
+      {CYCLING_WORDS.map((word, i) => (
         <motion.span
-          key={CYCLING_WORDS[index]}
-          initial={{ y: 20, opacity: 0, filter: "blur(4px)" }}
-          animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-          exit={{ y: -20, opacity: 0, filter: "blur(4px)" }}
+          key={word}
+          initial={false}
+          animate={
+            i === index
+              ? { y: 0, opacity: 1, filter: "blur(0px)" }
+              : { y: -20, opacity: 0, filter: "blur(4px)" }
+          }
           transition={{ duration: 0.35, ease: "easeInOut" }}
-          className="inline-block bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent font-bold"
+          aria-hidden={i !== index}
+          className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent font-bold"
         >
-          {CYCLING_WORDS[index]}
+          {word}
         </motion.span>
-      </AnimatePresence>
+      ))}
     </span>
   );
 }
@@ -333,104 +350,168 @@ function Navbar({ onTryToolixClick }: { onTryToolixClick: () => void }) {
   );
 }
 
-function HeroBackgroundVideo() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const opacityRef = useRef(0);
-  const animationRef = useRef<number>(0);
-  const [opacity, setOpacity] = useState(0);
+function HeroBackground() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    const src =
-      "https://stream.mux.com/s8pMcOvMQXc4GD6AX4e1o01xFogFxipmuKltNfSYza0200.m3u8";
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
-    const handleLoaded = () => {
-      video.play().catch(() => {});
+    // The coloured glows are CSS radial-gradient layers (GPU-composited, so
+    // perfectly smooth — no canvas fillRect edges). The canvas only draws the
+    // cheap rising particles. Fixed seeds -> a pure function of time.
+    const particles = Array.from({ length: 70 }, (_, i) => ({
+      x: ((i * 127.1) % 100) / 100,
+      y: ((i * 311.7) % 100) / 100,
+      r: 0.6 + ((i * 37) % 14) / 10,
+      spd: 0.006 + ((i * 23) % 12) / 1000,
+      ph: (i * 0.7) % 6.283,
+      tw: 0.4 + ((i * 13) % 10) / 12,
+    }));
+
+    let w = 0;
+    let h = 0;
+    let raf = 0;
+    let onScreen = true;
+
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      canvas.width = Math.max(1, Math.round(w * dpr));
+      canvas.height = Math.max(1, Math.round(h * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
-    if (Hls.isSupported()) {
-      const hls = new Hls();
-      hls.loadSource(src);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, handleLoaded);
-      return () => hls.destroy();
-    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = src;
-      video.addEventListener("loadedmetadata", handleLoaded);
-      return () => video.removeEventListener("loadedmetadata", handleLoaded);
-    }
-  }, []);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const fadeDuration = 0.5;
-    let lastTime = performance.now();
-
-    const animate = (currentTime: number) => {
-      lastTime = currentTime;
-
-      if (video.duration && video.duration > 0) {
-        const current = video.currentTime;
-        const duration = video.duration;
-
-        if (current <= fadeDuration) {
-          opacityRef.current = Math.min(current / fadeDuration, 1);
-        } else if (current >= duration - fadeDuration) {
-          opacityRef.current = Math.max((duration - current) / fadeDuration, 0);
-        } else {
-          opacityRef.current = 1;
-        }
-
-        setOpacity(opacityRef.current);
+    const draw = (now: number) => {
+      const t = now / 1000;
+      ctx.clearRect(0, 0, w, h);
+      for (const p of particles) {
+        const y = (((p.y - t * p.spd) % 1) + 1) % 1;
+        const x = p.x * w + Math.sin(t * 0.25 + p.ph) * 14;
+        const py = y * h * 0.92;
+        const tw = 0.5 + 0.5 * Math.sin(t * p.tw + p.ph);
+        ctx.beginPath();
+        ctx.arc(x, py, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(190,242,255,${0.05 + tw * 0.24})`;
+        ctx.fill();
       }
-
-      animationRef.current = requestAnimationFrame(animate);
     };
 
-    const handleVideoPlay = () => {
-      lastTime = performance.now();
-      animationRef.current = requestAnimationFrame(animate);
+    const loop = (now: number) => {
+      if (onScreen) draw(now);
+      raf = requestAnimationFrame(loop);
     };
 
-    video.addEventListener("play", handleVideoPlay);
+    resize();
+    if (reduced) {
+      draw(0); // single static frame, no loop
+    } else {
+      raf = requestAnimationFrame(loop);
+    }
+
+    const onResize = () => {
+      resize();
+      if (reduced) draw(0);
+    };
+    window.addEventListener("resize", onResize);
+
+    // Don't burn CPU when the hero is scrolled out of view.
+    let io: IntersectionObserver | undefined;
+    if (!reduced && "IntersectionObserver" in window) {
+      io = new IntersectionObserver(([entry]) => {
+        onScreen = entry.isIntersecting;
+      });
+      io.observe(canvas);
+    }
 
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-      video.removeEventListener("play", handleVideoPlay);
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", onResize);
+      io?.disconnect();
     };
   }, []);
 
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+  // Each glow drifts on the GPU via transform (cheap + smooth). Under reduced
+  // motion the drift is disabled and the layers sit still.
+  const drift = (enabled: boolean) =>
+    enabled
+      ? { animate: { x: [0, 26, -18, 0], y: [0, -20, 16, 0] } }
+      : { animate: { x: 0, y: 0 } };
 
-    const handleEnded = async () => {
-      setOpacity(0);
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      video.currentTime = 0;
-      await video.play();
-    };
-
-    video.addEventListener("ended", handleEnded);
-    return () => video.removeEventListener("ended", handleEnded);
-  }, []);
+  const reduced = useReducedMotion();
+  const glowTransition = {
+    duration: 18,
+    repeat: Infinity,
+    ease: "easeInOut" as const,
+  };
 
   return (
-    <video
-      ref={videoRef}
-      preload="auto"
-      autoPlay
-      muted
-      playsInline
-      className="absolute inset-0 w-full h-full object-cover scale-[1.2] origin-left pointer-events-none"
-      style={{ opacity }}
-    />
+    <div
+      aria-hidden
+      className="absolute inset-0 overflow-hidden"
+      style={{
+        background:
+          "radial-gradient(130% 90% at 50% 0%, #0a1118 0%, #06080b 55%, #040506 100%)",
+      }}
+    >
+      {/* Brand-coloured glow layers — radial gradients fade smoothly to
+          transparent, so there are no hard edges to band or seam. */}
+      <motion.div
+        {...drift(!reduced)}
+        transition={glowTransition}
+        className="absolute -left-[8%] top-[6%] h-[46rem] w-[46rem] rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(34,211,238,0.20) 0%, rgba(34,211,238,0.07) 42%, rgba(34,211,238,0) 70%)",
+        }}
+      />
+      <motion.div
+        {...drift(!reduced)}
+        transition={{ ...glowTransition, duration: 22 }}
+        className="absolute -right-[6%] top-[2%] h-[42rem] w-[42rem] rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(52,211,153,0.17) 0%, rgba(52,211,153,0.06) 42%, rgba(52,211,153,0) 70%)",
+        }}
+      />
+      <motion.div
+        {...drift(!reduced)}
+        transition={{ ...glowTransition, duration: 26 }}
+        className="absolute left-1/2 top-1/2 h-[54rem] w-[54rem] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(56,189,248,0.16) 0%, rgba(59,130,246,0.06) 45%, rgba(59,130,246,0) 70%)",
+        }}
+      />
+      <motion.div
+        {...drift(!reduced)}
+        transition={{ ...glowTransition, duration: 20 }}
+        className="absolute -left-[4%] bottom-[-10%] h-[38rem] w-[38rem] rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(167,139,250,0.14) 0%, rgba(167,139,250,0.05) 42%, rgba(167,139,250,0) 70%)",
+        }}
+      />
+
+      {/* Rising particles (canvas, cheap). */}
+      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+
+      {/* Vignette focuses the centre and deepens the edges. */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(120% 90% at 50% 50%, rgba(5,5,5,0) 42%, rgba(5,5,5,0.55) 100%)",
+        }}
+      />
+    </div>
   );
 }
 
@@ -438,7 +519,7 @@ function HeroSection({ onTryToolixClick }: { onTryToolixClick: () => void }) {
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 overflow-hidden">
       {/* Background Video */}
-      <HeroBackgroundVideo />
+      <HeroBackground />
 
       {/* Bottom fade gradient */}
       <div
