@@ -377,10 +377,11 @@ function HeroBackgroundVideo() {
         const current = video.currentTime;
         const duration = video.duration;
 
+        // Fade in only at the start of the video. We deliberately do NOT fade
+        // out at the end: the video element uses `loop`, so a fade-out would
+        // create a visible dark seam every time the background restarts.
         if (current <= fadeDuration) {
           opacityRef.current = Math.min(current / fadeDuration, 1);
-        } else if (current >= duration - fadeDuration) {
-          opacityRef.current = Math.max((duration - current) / fadeDuration, 0);
         } else {
           opacityRef.current = 1;
         }
@@ -406,21 +407,6 @@ function HeroBackgroundVideo() {
     };
   }, []);
 
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const handleEnded = async () => {
-      setOpacity(0);
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      video.currentTime = 0;
-      await video.play();
-    };
-
-    video.addEventListener("ended", handleEnded);
-    return () => video.removeEventListener("ended", handleEnded);
-  }, []);
-
   return (
     <video
       ref={videoRef}
@@ -428,6 +414,7 @@ function HeroBackgroundVideo() {
       autoPlay
       muted
       playsInline
+      loop
       className="absolute inset-0 w-full h-full object-cover scale-[1.2] origin-left pointer-events-none"
       style={{ opacity }}
     />
