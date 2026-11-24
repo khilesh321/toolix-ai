@@ -5,6 +5,7 @@ import {
   UIMessage,
 } from "ai";
 import { z } from "zod";
+import { CHAT_MODES } from "@/lib/system-prompt";
 import { buildGraph } from "@/lib/graph";
 import { auth } from "@clerk/nextjs/server";
 import { chatExists, loadChat, saveChat } from "@/lib/chat-store";
@@ -13,23 +14,32 @@ import { rateLimitChat } from "@/lib/rate-limit";
 export const maxDuration = 30;
 
 // ---- Zod schemas (H-1 fix) ----
-// Whitelist what we accept from the client; strip everything else so
-// callers cannot inject arbitrary history / oversized payloads.
-const textPartSchema = z.object({
+// Strict allow-list of accepted part shapes. Unknown shapes are rejected
+// so a malicious client cannot sneak arbitrarily sized payloads through.
+// Client-supplied message ids are dropped — the server regenerates them.
+const uiTextPartSchema = z.object({
   type: z.literal("text"),
   text: z.string().max(32_000),
 });
 
-const allowedPartSchemas = z.union([
-  textPartSchema,
-  z.object({ type: z.string(), [z.string()]: z.unknown() }).loose(),
+const uiToolInvocationPartSchema = z.object({
+  type: z.literal("tool-invocation"),
+  toolInvocation: z
+    .object({
+      toolName: z.string().max(64),
+      state: z.string().max(32),
+    })
+    .loose(),
+});
+
+const allowedPartSchema = z.union([
+  uiTextPartSchema,
+  uiToolInvocationPartSchema,
 ]);
 
 const uiMessageSchema = z.object({
-  id: z.string().max(128).optional(),
-  role: z.enum(["user", "assistant", "system", "data"]),
-  parts: z.array(allowedPartSchemas).min(1).max(200),
-  metadata: z.unknown().optional(),
+  role: z.enum(["user", "assistant", "system"]),
+  parts: z.array(allowedPartSchema).min(1).max(200),
 });
 
 const chatPostSchema = z.object({
@@ -41,8 +51,12 @@ const chatPostSchema = z.object({
   message: uiMessageSchema.optional(),
 });
 
-// ---- Mode allow-list (defense in depth on top of system-prompt.ts) ----
-const ALLOWED_MODES = new Set(["Study and Learn"]);
+// Hard cap on the raw request body before we parse JSON — defense in
+// depth on top of Vercel's platform-level body size limit.
+const MAX_BODY_BYTES = 1_000_000;
+
+// ---- Mode allow-list shared with lib/system-prompt.ts ----
+const ALLOWED_MODES = new Set<string>(CHAT_MODES);
 
 export async function POST(req: Request) {
   const { userId } = await auth();
@@ -53,6 +67,8 @@ export async function POST(req: Request) {
 
   // ---- Per-user rate limit (H-2 fix) ----
   // Caps LLM + paid-tool (NVIDIA / Tavily / CSE) spend per user.
+  // NOTE: per-process only on serverless; swap for a shared store if a
+  // hard cap across instances is required.
   const rl = rateLimitChat(userId);
   if (!rl.allowed) {
     return Response.json(
@@ -68,6 +84,11 @@ export async function POST(req: Request) {
   }
 
   // ---- Parse + validate body (H-1 fix) ----
+  const contentLength = req.headers.get("content-length");
+  if (contentLength && Number(contentLength) > MAX_BODY_BYTES) {
+    return Response.json({ error: "Payload too large." }, { status: 413 });
+  }
+
   let rawBody: unknown;
   try {
     rawBody = await req.json();
@@ -77,8 +98,13 @@ export async function POST(req: Request) {
 
   const parsed = chatPostSchema.safeParse(rawBody);
   if (!parsed.success) {
+    // Log server-side; do not leak schema structure back to the client.
+    console.warn(
+      "[chat] invalid body:",
+      JSON.stringify(parsed.error.issues.slice(0, 5)),
+    );
     return Response.json(
-      { error: "Invalid request body.", issues: parsed.error.issues },
+      { error: "Invalid request body." },
       { status: 400 },
     );
   }

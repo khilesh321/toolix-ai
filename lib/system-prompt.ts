@@ -1,3 +1,9 @@
+// Single source of truth for the chat "mode" allow-list.
+// Used both by getSystemPrompt() and the /api/chat request validator so
+// the two stay in sync. Add a new mode here (and a branch in
+// getSystemPrompt) to enable it end-to-end.
+export const CHAT_MODES = ["Study and Learn"] as const;
+
 export function getSystemPrompt(mode?: string): string {
   let systemPrompt = `You are **Toolix AI**, a helpful, precise, and UI-aware AI assistant deeply integrated with **Thesys Generative UI (C1)** and multiple functional tools.
 
